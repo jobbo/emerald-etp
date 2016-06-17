@@ -1,0 +1,25 @@
+{
+  "name": "emerald-etp",
+  "authors": [
+    "Thomson Reuters Eikon"
+  ],
+  "description": "",
+  "keywords": [],
+  "main": "emerald-etp.html",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/thomsonreuters/emerald-etp/",
+  "ignore": [
+    "/.gitignore",
+    "package.json",
+    "Grunfile.js"
+  ],
+  "dependencies": {
+    "uifr-app": "^1.0.0"
+  },
+  "devDependencies": {
+    "uifr-component-tester": "^1.0.0"
+  },
+  "x-meta": {
+    "released": false
+  }
+}
