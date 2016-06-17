@@ -13,7 +13,7 @@
             min-height: 33px;
             padding: 0 5px;
         }
-        :host  #tagInput {
+        :host #tagInput {
             flex-grow: 1;
             display: inline-block;
             order: 200;
@@ -23,7 +23,7 @@
             font-size: 14px;
             margin: 0;
         }
-        :host  #tagInput:focus {
+        :host #tagInput:focus {
             outline: none;
         }
         :host .etpTagInput div.etpTag {
@@ -61,8 +61,7 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        :host .etpTagInput div.etpTag
-        :hover .remove {
+        :host .etpTagInput div.etpTag:hover .remove {
             right: 0;
         }
     </style>
@@ -136,8 +135,8 @@
             });
             $tag.dataset.index = idx;
             $tag.innerHTML = tag;
-            $tag.appendChild($remove);
-            Polymer.dom(this.root).querySelector('.etpTagInput').appendChild($tag);
+            Polymer.dom($tag).appendChild($remove);
+            Polymer.dom(this.$$('.etpTagInput')).appendChild($tag);
             this.updateStyles();
         });
     },
@@ -145,7 +144,7 @@
         var tagElements = this.querySelectorAll('.etpTag');
         if (tagElements.length > 0) {
             for (var i = 0; i < tagElements.length; i++) {
-                Polymer.dom(this.root).querySelector('.etpTagInput').removeChild(tagElements[i]);
+                Polymer.dom(this.$$('.etpTagInput')).removeChild(tagElements[i]);
             }
         }
     },
