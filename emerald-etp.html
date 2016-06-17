@@ -1,12 +1,167 @@
 <dom-module id="emerald-etp">
 <template>
-  <style></style>
-  <content></content>
+    <style>
+        :host .etpTagInput {
+            font-family: 'Helvetica Neue', 'Lucida Grande', sans-serif;
+            max-width: 100%;
+            display: flex;
+            align-content: flex-start;
+            flex-wrap: wrap;
+            background-color: #FFF;
+            border: solid 1px #CCC;
+            border-radius: 2px;
+            min-height: 33px;
+            padding: 0 5px;
+        }
+        :host  #tagInput {
+            flex-grow: 1;
+            display: inline-block;
+            order: 200;
+            border: none;
+            height: 33px;
+            line-height: 33px;
+            font-size: 14px;
+            margin: 0;
+        }
+        :host  #tagInput:focus {
+            outline: none;
+        }
+        :host .etpTagInput div.etpTag {
+            display: inline-block;
+            flex-grow: 0;
+            margin: 5px 5px 5px 0;
+            padding: 0 10px;
+            height: 25px;
+            line-height: 25px;
+            background-color: #E1E1E1;
+            color: #333;
+            font-size: 14px;
+            order: 100;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        :host .etpTagInput div.etpTag.duplicate {
+            background-color: rgba(255, 64, 27, 0.71);
+            transition: all 0.3s linear;
+        }
+        :host .etpTagInput div.etpTag:last-child {
+            margin-right: 5px;
+        }
+        :host .etpTagInput div.etpTag .remove {
+            display: inline-block;
+            background-color: rgba(255, 64, 27, 0.71);
+            color: #FFF;
+            position: absolute;
+            right: -20px;
+            width: 20px;
+            text-align: center;
+            border-top-right-radius: 2px;
+            border-bottom-right-radius: 2px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        :host .etpTagInput div.etpTag
+        :hover .remove {
+            right: 0;
+        }
+    </style>
+    <div class="etpTagInput">
+        <input type="text" id="tagInput" />
+        <!-- Start Tag Elements -->
+    </div>
 </template>
 <script>
   Polymer({
     is: 'emerald-etp',
     properties: {
+        tags : {
+            type: Array,
+            value: function () {
+            return [];
+            },
+        }
+    },
+    created: function() {
+
+    },
+    attached: function() {
+        let allowDelete = false;
+        debugger;
+        this.querySelector('#tagInput').addEventListener("keydown", (event) => {
+            let tag = this.querySelector('#tagInput').value;
+            if (event.keyCode === 13) {
+                this.addTag(tag);
+            } else if (event.keyCode === 188) {
+                event.preventDefault();
+                this.addTag(tag);
+            } else if (event.keyCode === 8 && tag.length === 0) {
+                if (allowDelete) {
+                    this.deleteTag(this.tags.length - 1);
+                    allowDelete = false;
+                } else {
+                    allowDelete = true;
+                }
+            }
+        });
+
+    },
+    addTag: function(tag) {
+        if (this.tags.indexOf(tag) === -1) {
+            this.tags.push(tag);
+            this.$.tagInput.value = "";
+            this.render();
+        } else {
+            var $element = this.querySelector('[data-index="' + this.tags.indexOf(tag) + '"]');
+            $element.className = ($element.className + " duplicate");
+            setTimeout(function () {
+                $element.className = $element.className.replace("duplicate", "");
+            }, 500);
+        }
+    },
+    get value() {
+        return this.tags.join(",");
+    },
+    render: function(){
+        debugger;
+        this.clear();
+        this.tags.forEach((tag, idx) => {
+            let $tag = document.createElement("div");
+            $tag.className = "etpTag";
+            let $remove = document.createElement("div");
+            $remove.className = "remove";
+            $remove.innerHTML = "x";
+            $remove.addEventListener("click", () => {
+                this.deleteTag(idx);
+            });
+            $tag.dataset.index = idx;
+            $tag.innerHTML = tag;
+            $tag.appendChild($remove);
+            Polymer.dom(this.root).querySelector('.etpTagInput').appendChild($tag);
+            this.updateStyles();
+        });
+    },
+    clear: function() {
+        var tagElements = this.querySelectorAll('.etpTag');
+        if (tagElements.length > 0) {
+            for (var i = 0; i < tagElements.length; i++) {
+                Polymer.dom(this.root).querySelector('.etpTagInput').removeChild(tagElements[i]);
+            }
+        }
+    },
+    empty: function() {
+        this.clear();
+        this.tags = [];
+    },
+    deleteTag: function(index) {
+        var newTags = [];
+        this.tags.forEach((tag, idx) => {
+            if (idx !== index) {
+                newTags.push(tag);
+            }
+        });
+        this.tags = newTags;
+        this.render();
     }
   });
 </script>
