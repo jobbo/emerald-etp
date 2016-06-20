@@ -1,3 +1,5 @@
+<link rel="import" href="emerald-autosuggest2/emerald-autosuggest2.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
 <dom-module id="emerald-etp">
 <template>
     <style>
@@ -67,6 +69,7 @@
     </style>
     <div class="etpTagInput">
         <input type="text" id="tagInput" />
+        <emerald-autosuggest2 id="myAutoSuggest"></emerald-autosuggest2>
         <!-- Start Tag Elements -->
     </div>
 </template>
@@ -86,7 +89,9 @@
     },
     attached: function() {
         let allowDelete = false;
-        debugger;
+        var tagInput = document.getElementById('tagInput');
+        var myAutoSuggest = document.getElementById('myAutoSuggest');
+        myAutoSuggest.setInput(tagInput);
         this.querySelector('#tagInput').addEventListener("keydown", (event) => {
             let tag = this.querySelector('#tagInput').value;
             if (event.keyCode === 13) {
@@ -122,10 +127,13 @@
         return this.tags.join(",");
     },
     render: function(){
-        debugger;
+
         this.clear();
+
+      
         this.tags.forEach((tag, idx) => {
             let $tag = document.createElement("div");
+            console.log($tag);
             $tag.className = "etpTag";
             let $remove = document.createElement("div");
             $remove.className = "remove";
@@ -161,7 +169,19 @@
         });
         this.tags = newTags;
         this.render();
-    }
+    },
+    _onDataReadyEvent: function () {
+        // onloadFinished
+        // var lastResponse = this.$.ajax.lastResponse;
+        // if (this.srcUrl && lastResponse) {
+        //   this.data = lastResponse;
+        //   this.animation = false;
+        //   this.fire('onDataReady', lastResponse);
+        // }
+        // else if (this.srcUrl && !lastResponse) {
+        //   this.animation = true;
+        // }
+      }
   });
 </script>
 </dom-module>

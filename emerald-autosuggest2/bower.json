@@ -1,0 +1,36 @@
+{
+  "name": "emerald-autosuggest",
+  "authors": [
+    "Thomson Reuters Eikon"
+  ],
+  "description": "Attachable auto-suggestion control",
+  "keywords": [
+    "autosuggest",
+    "search",
+    "suggestion"
+  ],
+  "main": "emerald-autosuggest.html",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/thomsonreuters/emerald-autosuggest/",
+  "ignore": [
+    "/.gitignore",
+    "package.json",
+    "Grunfile.js"
+  ],
+  "dependencies": {
+    "jet-app": "^2.0.0",
+    "uifr-app": "^1.0.0",
+    "coral-popup-panel": "^1.0.7",
+    "coral-list": "^1.0.21",
+    "jet-service-adapter": "^1.0.13"
+  },
+  "devDependencies": {
+    "uifr-component-tester": "^1.0.0"
+  },
+  "x-meta": {
+    "released": true,
+    "build": {
+      "include-files": []
+    }
+  }
+}
