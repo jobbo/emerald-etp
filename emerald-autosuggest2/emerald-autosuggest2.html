@@ -1,7 +1,6 @@
 <link rel="import" href="../bower_components/uifr-app/uifr-app.html">
 <link rel="import" href="../bower_components/coral-popup-panel/coral-popup-panel.html">
 <link rel="import" href="../bower_components/coral-list/coral-list.html">
-<link rel="import" href="../bower_components/jet-service-adapter/jet-service-adapter.html">
 
 <dom-module id="emerald-autosuggest2">
 <template>
@@ -285,8 +284,8 @@
        var popup = this.$$('coral-popup-panel');
        popup.autoReposition = true;
        this._setPopup(popup);
-      
-       
+
+
 
 //       var adapter = this.$$('jet-service-adapter');
 //       adapter.addEventListener('message', this._messageReceive);
@@ -297,7 +296,7 @@
      *
      * @param {Element} input Input element.
      */
-    setInput: function (input) 
+    setInput: function (input)
     {console.log("2");      // Catch invalid input
       // if (!input || input.nodeType !== 1) {
       //   return;
@@ -344,7 +343,7 @@
 //      *
 //      * @param {Element} element An element to be added to connected elements.
 //      */
-//     addConnectedElement: function (element) 
+//     addConnectedElement: function (element)
 //     {console.log("3");
 //           if (!element || element.nodeType !== 1) {
 //         return;
@@ -623,7 +622,7 @@
 //       // }
 
       //this.list.data = suggestionsData;
-      
+
        this._manageState();
      },
     _manageState: function () {
