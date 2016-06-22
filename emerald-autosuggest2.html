@@ -295,8 +295,8 @@
      *
      * @param {Element} input Input element.
      */
-    setInput: function (input) 
-    {    
+    setInput: function (input)
+    {
       // Catch invalid input
       // if (!input || input.nodeType !== 1) {
       //   return;
@@ -522,7 +522,7 @@
         return deferred.promise;
     },
     _transformData: function (data) {
-      
+
     },
      _processSuggestionsData: function (data) {
         var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
@@ -534,14 +534,14 @@
 
         suggestPromise.then(function(resp){
 
-          
+
           this.list.data = resp.results[0].resultList;
 
           var transformedData = this._transformer(data);
           //var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
           console.log(this.list.data);
           this._manageState();
-        
+
         }.bind(this));
         // this.list.data = [ {
         //   'label':'test',
@@ -566,7 +566,7 @@
         //             "s": "PM",
         //             "vc": "EQ",
         //             "st": "RIC"}
-          
+
         // },
         // { 'label':'test2',
         //   'value':{
@@ -592,7 +592,7 @@
         //             "vc": "EQ",
         //             "st": "RIC"}
         // }];this._manageState();
-    }
+    //}
 //           this.list.data = [{
 //   'label': 'GOOGL.O1',
 //   'value': {
@@ -897,7 +897,7 @@
 //       if (this.disabled) {
 //         return;
 //       }
-    
+
        //var popupVisible = this.popup.isShown();
        var input = this.input;
 
@@ -1012,7 +1012,7 @@
         //  * more-search event, fired when moreSearch item is selected.
         //  *
         //  * @event more-search
-         
+
         // this.fire('more-search', detail, { bubbles: false });
       //}
       //else {
