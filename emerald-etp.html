@@ -87,6 +87,9 @@
     attached: function() {
         let allowDelete = false;
         debugger;
+        this.querySelector('.etpTagInput').addEventListener("mousedown", (event) => {
+            this.addInput();
+        });
         this.querySelector('#tagInput').addEventListener("keydown", (event) => {
             let tag = this.querySelector('#tagInput').value;
             if (event.keyCode === 13) {
@@ -104,6 +107,11 @@
             }
         });
 
+    },
+    addInput: function() {
+        let $input = document.createElement("input");
+        $input.type = "text";
+        Polymer.dom(this.$$('.etpTagInput')).appendChild($input);
     },
     addTag: function(tag) {
         if (this.tags.indexOf(tag) === -1) {
@@ -137,7 +145,6 @@
             $tag.innerHTML = tag;
             Polymer.dom($tag).appendChild($remove);
             Polymer.dom(this.$$('.etpTagInput')).appendChild($tag);
-            this.updateStyles();
         });
     },
     clear: function() {
