@@ -522,24 +522,46 @@
         return deferred.promise;
     },
     _transformData: function (data) {
-
+        var result = [];
+        for(var i = 0; data.results.length > i; i++){
+          var objType = data.results[i].grpType;
+          for(var j=0;j< data.results[i].resultList.length;j++){
+            var resultListObj = data.results[i].resultList[j];
+            if(objType === 'entity'){
+              for(var x=0;x<resultListObj.hits.length;x++){
+                var hitObj = resultListObj.hits[x];
+                hitObj.objType = objType;
+                result.push({
+                  label: hitObj.title,
+                  value:hitObj
+                });
+              }
+            }else{
+              resultListObj.objType = objType;
+              result.push({
+                label: resultListObj.title,
+                value:resultListObj
+              });
+            }
+          }
+        }
+        return result;
     },
      _processSuggestionsData: function (data) {
         var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
           "previousPillType": "entity",
           "nextPillType": "entity",
-          "queryTxt": "Inter"
+          "queryTxt": "i",
+          "fullTxt": "i"
 
         });
 
         suggestPromise.then(function(resp){
-
-
-          this.list.data = resp.results[0].resultList;
-
-          var transformedData = this._transformer(data);
+          var transformedData = this._transformData(resp);
+          console.log(transformedData)
+          this.list.data = transformedData;
           //var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
-          console.log(this.list.data);
+          // console.log(this.list.data);
           this._manageState();
 
         }.bind(this));
