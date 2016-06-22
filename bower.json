@@ -14,7 +14,9 @@
     "Grunfile.js"
   ],
   "dependencies": {
-    "uifr-app": "^1.0.0"
+    "uifr-app": "^1.0.0",
+    "coral-popup-panel": "^1.0.7",
+    "coral-list": "^1.0.21"
   },
   "devDependencies": {
     "uifr-component-tester": "^1.0.0"
