@@ -271,7 +271,6 @@
        this._itemSelect = this._itemSelect.bind(this);
        this._itemContextMenu = this._itemContextMenu.bind(this);
       // this._messageReceive = this._messageReceive.bind(this);
-      // this._suggestionItemRenderer = this._suggestionItemRenderer.bind(this);
       // this._moreSearchItemRenderer = this._moreSearchItemRenderer.bind(this);
 
        var list = this.$$('coral-list');
@@ -296,11 +295,13 @@
      *
      * @param {Element} input Input element.
      */
-    setInput: function (input)
-    {console.log("2");      // Catch invalid input
+    setInput: function (input) 
+    {    
+      // Catch invalid input
       // if (!input || input.nodeType !== 1) {
       //   return;
       // }
+
 
       // if (input.$$) { // Custom element
       //   if (!input.$$('input')) {
@@ -343,7 +344,6 @@
 //      *
 //      * @param {Element} element An element to be added to connected elements.
 //      */
-//     addConnectedElement: function (element)
 //     {console.log("3");
 //           if (!element || element.nodeType !== 1) {
 //         return;
@@ -457,7 +457,7 @@
 //         this._blockSuggestions = true;
 //       }
 //     },
-        defer: function() {
+      defer: function() {
         var deferred = {};
         var _callbacks = [];
         var _solved = false;
@@ -481,7 +481,16 @@
         };
         return deferred;
     },
+    transformResponse: function (data) {
+        var JSON_START = /^\s*(\[|\{[^\{])/,
+            JSON_END = /[\}\]]\s*$/;
 
+        if (typeof data === 'string' && JSON_START.test(data) && JSON_END.test(data)) {
+            data = JSON.parse(data);
+        }
+
+        return data;
+    },
    httpPost: function(url, data) {
         var deferred = this.defer();
         var xhr = new XMLHttpRequest();
@@ -491,8 +500,7 @@
                 var respData;
 
                 if (xhr.status === 200) {
-                    respData = xhr.response;
-                    //console.log(this.list)
+                    respData = this.transformResponse(xhr.response);
                 } else {
                     respData = {
                         hasError: true,
@@ -502,7 +510,8 @@
 
                 deferred.resolve(respData);
             }
-        };
+
+        }.bind(this);
 
         xhr.open('POST', url, true);
         xhr.setRequestHeader('Content-type', 'application/json');
@@ -512,7 +521,9 @@
         xhr.send(JSON.stringify(data));
         return deferred.promise;
     },
-
+    _transformData: function (data) {
+      
+    },
      _processSuggestionsData: function (data) {
         var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
           "previousPillType": "entity",
@@ -520,86 +531,145 @@
           "queryTxt": "Inter"
 
         });
-        console.log("out ",this);
+
         suggestPromise.then(function(resp){
-          //this.list.data = resp;
-          console.log(this);
+
+          
+          this.list.data = resp.results[0].resultList;
+
+          var transformedData = this._transformer(data);
+          //var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
+          console.log(this.list.data);
+          this._manageState();
+        
         }.bind(this));
-          this.list.data = [{
-  'label': 'GOOGL.O1',
-  'value': {
-    'ac': [
-      'A:1',
-      'A:1L'
-    ],
-    'cmd': 'GOOGL.O',
-    'id': 17739690,
-    'p': {
-      'OAPermID': '5030853586',
-      'RIC': 'GOOGL.O'
-    },
-    's': 'GOOGL.O',
-    'score': 2833305,
-    'significance': 270340,
-    'source': '12',
-    'st': 'RIC',
-    'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
-    'symbol': 'GOOGL.O',
-    'title': 'Alphabet Inc (<b>Google</b> Inc)',
-    'vc': 'EQ'
-  },
-  'highlighted': false
-},
-{
-  'label': 'GOOGL.O2',
-  'value': {
-    'ac': [
-      'A:1',
-      'A:1L'
-    ],
-    'cmd': 'GOOGL.O',
-    'id': 17739690,
-    'p': {
-      'OAPermID': '5030853586',
-      'RIC': 'GOOGL.O'
-    },
-    's': 'GOOGL.O',
-    'score': 2833305,
-    'significance': 270340,
-    'source': '12',
-    'st': 'RIC',
-    'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
-    'symbol': 'GOOGL.O',
-    'title': 'Alphabet Inc (<b>Google</b> Inc)',
-    'vc': 'EQ'
-  },
-  'highlighted': true
-},
-{
-  'label': 'GOOGL.O3',
-  'value': {
-    'ac': [
-      'A:1',
-      'A:1L'
-    ],
-    'cmd': 'GOOGL.O',
-    'id': 17739690,
-    'p': {
-      'OAPermID': '5030853586',
-      'RIC': 'GOOGL.O'
-    },
-    's': 'GOOGL.O',
-    'score': 2833305,
-    'significance': 270340,
-    'source': '12',
-    'st': 'RIC',
-    'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
-    'symbol': 'GOOGL.O',
-    'title': 'Alphabet Inc (<b>Google</b> Inc)',
-    'vc': 'EQ'
-  },
-  'highlighted': false
-}];
+        // this.list.data = [ {
+        //   'label':'test',
+        //   'value':{"score": 2560315,
+        //             "significance": 1048580,
+        //             "navigation": null,
+        //             "title": "Philip Morris International Inc",
+        //             "subtitle": "Ordinary Share - MiFID Eligible Security - NYSE Consolidated - PM",
+        //             "symbol": "PM",
+        //             "cmd": "PM",
+        //             "relations": {},
+        //             "source": "12",
+        //             "id": 44744749,
+        //             "p": {
+        //               "OAPermID": "4298015178",
+        //               "RIC": "PM"
+        //             },
+        //             "ac": [
+        //               "A:1",
+        //               "A:1L"
+        //             ],
+        //             "s": "PM",
+        //             "vc": "EQ",
+        //             "st": "RIC"}
+          
+        // },
+        // { 'label':'test2',
+        //   'value':{
+        //             "score": 2560143,
+        //             "significance": 1048580,
+        //             "navigation": null,
+        //             "title": "International Business Machines Corp",
+        //             "subtitle": "Ordinary Share - MiFID Eligible Security - NYSE Consolidated - IBM",
+        //             "symbol": "IBM",
+        //             "cmd": "IBM",
+        //             "relations": {},
+        //             "source": "12",
+        //             "id": 1097326,
+        //             "p": {
+        //               "OAPermID": "4295904307",
+        //               "RIC": "IBM"
+        //             },
+        //             "ac": [
+        //               "A:1",
+        //               "A:1L"
+        //             ],
+        //             "s": "IBM",
+        //             "vc": "EQ",
+        //             "st": "RIC"}
+        // }];this._manageState();
+    }
+//           this.list.data = [{
+//   'label': 'GOOGL.O1',
+//   'value': {
+//     'ac': [
+//       'A:1',
+//       'A:1L'
+//     ],
+//     'cmd': 'GOOGL.O1',
+//     'id': 17739690,
+//     'p': {
+//       'OAPermID': '5030853586',
+//       'RIC': 'GOOGL.O'
+//     },
+//     's': 'GOOGL.O',
+//     'score': 2833305,
+//     'significance': 270340,
+//     'source': '12',
+//     'st': 'RIC',
+//     'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
+//     'symbol': 'GOOGL.O',
+//     'title': 'Alphabet Inc (<b>Google</b> Inc)',
+//     'vc': 'EQ'
+//   },
+//   'highlighted': false
+// },
+// {
+//   'label': 'GOOGL.O2',
+//   'value': {
+//     'ac': [
+//       'A:1',
+//       'A:1L'
+//     ],
+
+//     'cmd': 'GOOGL.O2',
+//     'id': 17739690,
+//     'p': {
+//       'OAPermID': '5030853586',
+//       'RIC': 'GOOGL.O'
+//     },
+//     's': 'GOOGL.O',
+//     'score': 2833305,
+//     'significance': 270340,
+//     'source': '12',
+//     'st': 'RIC',
+//     'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
+//     'symbol': 'GOOGL.O',
+//     'title': 'Alphabet Inc (<b>Google</b> Inc)',
+//     'vc': 'EQ'
+//   },
+//   'highlighted': true
+// },
+// {
+//   'label': 'GOOGL.O3',
+//   'value': {
+//     'ac': [
+//       'A:1',
+//       'A:1L'
+//     ],
+
+//     'cmd': 'GOOGL.O3',
+//     'id': 17739690,
+//     'p': {
+//       'OAPermID': '5030853586',
+//       'RIC': 'GOOGL.O'
+//     },
+//     's': 'GOOGL.O',
+//     'score': 2833305,
+//     'significance': 270340,
+//     'source': '12',
+//     'st': 'RIC',
+//     'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
+//     'symbol': 'GOOGL.O',
+//     'title': 'Alphabet Inc (<b>Google</b> Inc)',
+//     'vc': 'EQ'
+//   },
+//   'highlighted': false
+// }];this._manageState();
 
 
 
@@ -623,23 +693,24 @@
 
       //this.list.data = suggestionsData;
 
-       this._manageState();
+
      },
     _manageState: function () {
-      console.log("11")
+
       var list = this.list;
+      console.log("manageState")
 
       // Hide suggestions if suggestions is blocked or not available
-      if (this._blockSuggestions || !list.data.length) {
-        this.hideSuggestions();
-        return;
-      }
+
+      // if (this._blockSuggestions || !list.data.length) {
+      //   this.hideSuggestions();
+      //   return;
+      // }
 
       // Update items
-      if (!list.itemRenderer) {
-        list.setItemRenderer(this._suggestionItemRenderer);
-      }
-
+       // if (!list.itemRenderer) {
+       //   list.setItemRenderer(this._suggestionItemRenderer);
+       // }
       // Select highlighted item if ENTER key is committed
       // Otherwise, force to show suggestions
       if (this._enterEvent) {
@@ -682,9 +753,9 @@
 
 //       return value || null;
 //     },
-//     _suggestionItemRenderer: function (item) {
-//       console.log("13 ",item)
-//       var data = item.value;
+     _suggestionItemRenderer: function (item) {
+
+       var data = item.value;
 //       var asSub = data.asSub === true;
 //       var columnElement;
 //       var contentElement;
@@ -753,7 +824,7 @@
 //       // }
 
 //       return wrapper;
-//     },
+     },
 //     _moreSearchItemRenderer: function (item) {
 //       console.log("14")
 //       var wrapper = document.createElement('div');
@@ -823,19 +894,18 @@
 //       }, 500);
 //     },
      _inputKeyDown: function (event) {
-       console.log("_inputKeyDown")
 //       if (this.disabled) {
 //         return;
 //       }
-
+    
        //var popupVisible = this.popup.isShown();
        var input = this.input;
-      console.log(input);
+
 //       var list = this.list;
 //       var item;
 //       console.log("input",input);
        this._processSuggestionsData(input);
-
+      this.showSuggestions();
       switch (event.keyCode) {
         case 13: // ENTER
           if (this.autoSelectDisabled) {
@@ -909,9 +979,6 @@
       this.fire('item-highlight', event.detail, { bubbles: false });
     },
     _itemSelect: function (event) {
-      if (this._blockSuggestions) {
-        return;
-      }
 
       var detail = event.detail;
       var item = detail.item;
@@ -924,31 +991,31 @@
       // Block further come-in data because use has already select preferred item
       this._blockSuggestions = true;
 
-      var moreSearch = item.value.asMoreLink;
+      // var moreSearch = item.value.asMoreLink;
 
-      // Support SHIFT + ENTER key for moreSearch
-      if (!this.moreSearchDisabled) {
-        var originalEvent = detail.originalEvent;
-        if (originalEvent && originalEvent.shiftKey && originalEvent.type === 'keydown') {
-          moreSearch = true;
-          item = this._getMoreSearchItem();
-        }
-      }
+      // // Support SHIFT + ENTER key for moreSearch
+      // if (!this.moreSearchDisabled) {
+      //   var originalEvent = detail.originalEvent;
+      //   if (originalEvent && originalEvent.shiftKey && originalEvent.type === 'keydown') {
+      //     moreSearch = true;
+      //     item = this._getMoreSearchItem();
+      //   }
+      // }
 
-      if (moreSearch) {
-        detail = {
-          url: item.value.url,
-          keyword: item.value.keyword
-        };
+      //if (moreSearch) {
+        // detail = {
+        //   url: item.value.url,
+        //   keyword: item.value.keyword
+        // };
 
-        /**
-         * more-search event, fired when moreSearch item is selected.
-         *
-         * @event more-search
-         */
-        this.fire('more-search', detail, { bubbles: false });
-      }
-      else {
+        // *
+        //  * more-search event, fired when moreSearch item is selected.
+        //  *
+        //  * @event more-search
+         
+        // this.fire('more-search', detail, { bubbles: false });
+      //}
+      //else {
         input.value = item.label;
 
         /**
@@ -957,7 +1024,7 @@
          * @event item-select
          */
         this.fire('item-select', detail, { bubbles: false });
-      }
+      //}
     },
     _itemContextMenu: function (event) {
       console.log("17")
