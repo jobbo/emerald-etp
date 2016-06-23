@@ -553,31 +553,36 @@
         }
         return result;
     },
-     _processSuggestionsData: function (data) {
-        var transformedData = this._transformData(data);
-          console.log(transformedData)
-          this.list.data = transformedData;
-          //var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
-          // console.log(this.list.data);
-          this._manageState();
+    _processSuggestionsData: function (data) {
+      var transformedData = this._transformData(data);
+      console.log(transformedData)
+      this.list.data = transformedData;
 
       console.log("_processSuggestionsData");
       this._timer = null;
-//console.log("data",data);
-      // var transformedData = this._transformer != null ? this._transformer(data) : data;
-      // var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
+
+      var suggestionsData = [];
+      var serachAllObj = {}
+
+      for(var i=0;i<transformedData.length;i++) {
+        if(transformedData[i].label === 'search all') {
+          serachAllObj = transformedData[i];
+        }else{
+          suggestionsData.push(transformedData[i]);
+        }
+      }
       // var searchUrl = transformedData.searchUrl;
       // console.log("transformedData ",transformedData)
       // console.log("suggestionsData ",suggestionsData)
       // console.log("searchUrl ",searchUrl)
 
-      if (!this.moreSearchDisabled && searchUrl) {
+      if (!this.moreSearchDisabled && serachAllObj) {
         suggestionsData.push({
           renderer: this._moreSearchItemRenderer,
           value: {
             asMoreLink: true,
-            url: searchUrl,
-            keyword: transformedData.params.query
+            url: serachAllObj.value.url,
+            keyword: serachAllObj.value.keyword
           }
         });
       }
