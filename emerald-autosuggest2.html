@@ -427,14 +427,22 @@
          * @event keyword-change
          */
         this.fire('keyword-change', { keyword: keyword, prevKeyword: this._keyword }, { bubbles: false });
-
+        console.log('Me !!!!!!' , this.data)
         if (!this.data) {
-          this._adapter.params = {
-            query: keyword,
-            profile: this.profile
-          };
+          var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
+            "previousPillType": "entity",
+            "nextPillType": "entity",
+            "queryTxt": keyword,
+            "fullTxt": keyword
+          });
+
+          suggestPromise.then(function(resp){
+            console.log('Me !!!!!!2' , resp)
+            this._processSuggestionsData(resp);
+          }.bind(this));
         }
         else {
+          console.log('Me !!!!!!3' , resp)
           this._processSuggestionsData(this.data);
         }
       }
@@ -546,23 +554,13 @@
         return result;
     },
      _processSuggestionsData: function (data) {
-        var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
-          "previousPillType": "entity",
-          "nextPillType": "entity",
-          "queryTxt": "i",
-          "fullTxt": "i"
-
-        });
-
-        suggestPromise.then(function(resp){
-          var transformedData = this._transformData(resp);
+        var transformedData = this._transformData(data);
           console.log(transformedData)
           this.list.data = transformedData;
           //var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
           // console.log(this.list.data);
           this._manageState();
 
-        }.bind(this));
       console.log("_processSuggestionsData");
       this._timer = null;
 //console.log("data",data);
