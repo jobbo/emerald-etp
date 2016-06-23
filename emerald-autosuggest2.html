@@ -164,7 +164,7 @@
        */
       autoSelectDisabled: {
         type: Boolean,
-        value: false,
+        value: true,
         reflectToAttribute: true
       },
       /**
@@ -646,6 +646,9 @@
       return value || null;
     },
     _suggestionItemRenderer: function (item) {
+      if (!item.value) {
+		    return;
+      }
       console.log("_suggestionItemRenderer");
       var data = item.value;
       var asSub = data.asSub === true;
@@ -801,7 +804,7 @@
       var item;
       console.log("input",input);
       switch (event.keyCode) {
-        case 13: // ENTER
+        case  9: // TAB
           if (this.autoSelectDisabled) {
             if (popupVisible) {
               this._selectHighlightedItem(event);
