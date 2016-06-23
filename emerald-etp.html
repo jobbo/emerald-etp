@@ -9,36 +9,48 @@
             display: flex;
             align-content: flex-start;
             flex-wrap: wrap;
-            background-color: #FFF;
+            background-color: #000;
             border: solid 1px #CCC;
             border-radius: 2px;
             min-height: 33px;
             padding: 0 5px;
         }
-        :host #tagInput {
+        :host #tagInputMain {
             flex-grow: 1;
             display: inline-block;
-            order: 200;
             border: none;
             height: 33px;
             line-height: 33px;
             font-size: 14px;
             margin: 0;
         }
-        :host #tagInput:focus {
+        :host #tagInput {
+            flex-grow: 0;
+            display: inline-block;
+            border: none;
+            height: 33px;
+            max-width: 1px;
+            line-height: 33px;
+            font-size: 14px;
+            margin: 0;
+        }
+        :host #tagInputMain:focus, #tagInput:focus {
             outline: none;
         }
+        :host #tagInput:focus {
+            max-width: none;
+            width: 100px;
+        };
         :host .etpTagInput div.etpTag {
             display: inline-block;
             flex-grow: 0;
-            margin: 5px 5px 5px 0;
+            margin: 5px 0px 5px 0px;
             padding: 0 10px;
             height: 25px;
             line-height: 25px;
             background-color: #E1E1E1;
             color: #333;
             font-size: 14px;
-            order: 100;
             border-radius: 2px;
             position: relative;
             overflow: hidden;
@@ -46,6 +58,9 @@
         :host .etpTagInput div.etpTag.duplicate {
             background-color: rgba(255, 64, 27, 0.71);
             transition: all 0.3s linear;
+        }
+        :host .etpTagInput div.etpTag:focus {
+            background-color: rgba(255, 64, 27, 0.71);
         }
         :host .etpTagInput div.etpTag:last-child {
             margin-right: 5px;
@@ -68,7 +83,7 @@
         }
     </style>
     <div class="etpTagInput">
-        <input type="text" id="tagInput" />
+        <input type="text" id="tagInputMain" />
         <emerald-autosuggest2 id="myAutoSuggest"></emerald-autosuggest2>
         <!-- Start Tag Elements -->
     </div>
@@ -88,43 +103,79 @@
 
     },
     attached: function() {
-        let allowDelete = false;
-        var tagInput = document.getElementById('tagInput');
+
+        var tagInputMain = document.getElementById('tagInputMain');
         var myAutoSuggest = document.getElementById('myAutoSuggest');
-        myAutoSuggest.setInput(tagInput);
-        this.querySelector('.etpTagInput').addEventListener("mousedown", (event) => {
-            this.addInput();
-        });
-        this.querySelector('#tagInput').addEventListener("keydown", (event) => {
-            let tag = this.querySelector('#tagInput').value;
-            if (event.keyCode === 13) {
-                this.addTag(tag);
-            } else if (event.keyCode === 188) {
+        myAutoSuggest.setInput(tagInputMain);
+        this.bindInputEvent(this.querySelector('#tagInputMain'));
+
+    },
+    bindInputEvent: function(element) {
+        let allowDelete = false;
+        element.addEventListener("keydown", (event) => {
+            let tag = element.value;
+            if (event.keyCode === 13) { //enter
+                this.addTag(tag, event.currentTarget);
+            } else if (event.keyCode === 188) { //comma
                 event.preventDefault();
-                this.addTag(tag);
-            } else if (event.keyCode === 8 && tag.length === 0) {
+                this.addTag(tag, event.currentTarget);
+            } else if (event.keyCode === 37) { //left
+                event.preventDefault();
+                event.currentTarget.previousElementSibling.focus();
+            } else if (event.keyCode === 39) { //right
+                event.preventDefault();
+                event.currentTarget.nextElementSibling.focus();
+            } else if (event.keyCode === 8 && tag.length === 0) { //backspace with not value in input
                 if (allowDelete) {
-                    this.deleteTag(this.tags.length - 1);
+                    this.deleteTag(event.currentTarget.previousElementSibling);
                     allowDelete = false;
                 } else {
                     allowDelete = true;
                 }
             }
         });
+    },
+    bindTagEvent: function(element) {
+        element.addEventListener("keydown", (event) => {
+
+            if (event.keyCode === 37) { //left
+                event.preventDefault();
+                event.currentTarget.previousElementSibling.focus();
+            } else if (event.keyCode === 39) { //right
+                event.preventDefault();
+                event.currentTarget.nextElementSibling.focus();
+            } else if (event.keyCode === 8 || event.keyCode === 46) { //backspace or delete
+                debugger;
+                event.preventDefault();
+                event.returnValue = false;
+
+                this.deleteTag(event.currentTarget);
+                allowDelete = false;
+
+
+            }
+        });
+    },
+    addInput: function(beforeNode) {
+        let $pillInput = document.createElement("input");
+        $pillInput.type = "text";
+        $pillInput.id = "tagInput";
+        $pillInput.className = "pillInput";
+        Polymer.dom(this.$$('.etpTagInput')).insertBefore($pillInput, beforeNode);
+        this.bindInputEvent($pillInput);
 
     },
-    addInput: function() {
-        let $input = document.createElement("input");
-        $input.type = "text";
-        Polymer.dom(this.$$('.etpTagInput')).appendChild($input);
+    removeInput: function() {
+
     },
-    addTag: function(tag) {
+    addTag: function(tag, currentInputElement) {
         if (this.tags.indexOf(tag) === -1) {
             this.tags.push(tag);
-            this.$.tagInput.value = "";
-            this.render();
+            this.$.tagInputMain.value = "";
+            this._addTag(tag, currentInputElement)
+            //this.render();
         } else {
-            var $element = this.querySelector('[data-index="' + this.tags.indexOf(tag) + '"]');
+            var $element = this.querySelector('[data-tag="' + tag + '"]');
             $element.className = ($element.className + " duplicate");
             setTimeout(function () {
                 $element.className = $element.className.replace("duplicate", "");
@@ -134,11 +185,29 @@
     get value() {
         return this.tags.join(",");
     },
+    _addTag: function(tag, currentInputElement) {
+        let $tag = document.createElement("div");
+        console.log($tag);
+        $tag.className = "etpTag";
+        let $remove = document.createElement("div");
+        $remove.className = "remove";
+        $remove.innerHTML = "x";
+        $remove.addEventListener("click", (event) => {
+            this.deleteTag(event.currentTarget.parentElement);
+        });
+        $tag.dataset.tag = tag;
+        $tag.tabIndex = 0;
+        $tag.innerHTML = tag;
+        Polymer.dom($tag).appendChild($remove);
+        Polymer.dom(this.$$('.etpTagInput')).insertBefore($tag, currentInputElement);
+        this.bindTagEvent($tag);
+        this.addInput($tag);
+    },
     render: function(){
 
         this.clear();
 
-      
+
         this.tags.forEach((tag, idx) => {
             let $tag = document.createElement("div");
             console.log($tag);
@@ -150,13 +219,21 @@
                 this.deleteTag(idx);
             });
             $tag.dataset.index = idx;
+            $tag.tabIndex = 0;
             $tag.innerHTML = tag;
             Polymer.dom($tag).appendChild($remove);
-            Polymer.dom(this.$$('.etpTagInput')).appendChild($tag);
+            Polymer.dom(this.$$('.etpTagInput')).insertBefore($tag, this.$.tagInputMain);
+            this.addInput($tag);
         });
     },
     clear: function() {
         var tagElements = this.querySelectorAll('.etpTag');
+        if (tagElements.length > 0) {
+            for (var i = 0; i < tagElements.length; i++) {
+                Polymer.dom(this.$$('.etpTagInput')).removeChild(tagElements[i]);
+            }
+        }
+        var tagElements = this.querySelectorAll('.pillInput');
         if (tagElements.length > 0) {
             for (var i = 0; i < tagElements.length; i++) {
                 Polymer.dom(this.$$('.etpTagInput')).removeChild(tagElements[i]);
@@ -167,15 +244,20 @@
         this.clear();
         this.tags = [];
     },
-    deleteTag: function(index) {
-        var newTags = [];
-        this.tags.forEach((tag, idx) => {
-            if (idx !== index) {
-                newTags.push(tag);
-            }
-        });
-        this.tags = newTags;
-        this.render();
+    deleteTag: function(currentTagElement) {
+        let tag = currentTagElement.firstChild.textContent;
+        Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement.previousElementSibling);
+        Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement);
+        let idx = this.tags.indexOf(tag)
+        this.tags.splice(idx, 1);
+        // var newTags = [];
+        // this.tags.forEach((tag, idx) => {
+        //     if (idx !== index) {
+        //         newTags.push(tag);
+        //     }
+        // });
+        // this.tags = newTags;
+        // this.render();
     },
     _onDataReadyEvent: function () {
         // onloadFinished
