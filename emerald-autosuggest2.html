@@ -263,201 +263,207 @@
         'defaultMoreSearchText': '更多关于 "{0}" 的搜索结果'
       }
     },
-     ready: function () {
-      //this._inputBlur = this._inputBlur.bind(this);
-       this._inputKeyDown = this._inputKeyDown.bind(this);
-      //this._inputTextChange = this._inputTextChange.bind(this);
-       this._itemHighlight = this._itemHighlight.bind(this);
-       this._itemSelect = this._itemSelect.bind(this);
-       this._itemContextMenu = this._itemContextMenu.bind(this);
-      // this._messageReceive = this._messageReceive.bind(this);
-      // this._moreSearchItemRenderer = this._moreSearchItemRenderer.bind(this);
+      ready: function () {
+      this._inputBlur = this._inputBlur.bind(this);
+      this._inputKeyDown = this._inputKeyDown.bind(this);
+      this._inputTextChange = this._inputTextChange.bind(this);
+      this._itemHighlight = this._itemHighlight.bind(this);
+      this._itemSelect = this._itemSelect.bind(this);
+      this._itemContextMenu = this._itemContextMenu.bind(this);
+      this._messageReceive = this._messageReceive.bind(this);
+      this._suggestionItemRenderer = this._suggestionItemRenderer.bind(this);
+      this._moreSearchItemRenderer = this._moreSearchItemRenderer.bind(this);
 
-       var list = this.$$('coral-list');
-//       list.clearHighlightOnLeave = false;
-       list.addEventListener('item-highlight', this._itemHighlight);
-       list.addEventListener('item-select', this._itemSelect);
-       list.addEventListener('item-contextmenu', this._itemContextMenu);
-       this._setList(list);
+      var list = this.$$('coral-list');
+      list.clearHighlightOnLeave = false;
+      list.addEventListener('item-highlight', this._itemHighlight);
+      list.addEventListener('item-select', this._itemSelect);
+      list.addEventListener('item-contextmenu', this._itemContextMenu);
+      this._setList(list);
 
-       var popup = this.$$('coral-popup-panel');
-       popup.autoReposition = true;
-       this._setPopup(popup);
+      var popup = this.$$('coral-popup-panel');
+      popup.autoReposition = true;
+      this._setPopup(popup);
 
-
-
-//       var adapter = this.$$('jet-service-adapter');
-//       adapter.addEventListener('message', this._messageReceive);
-//       this._adapter = adapter;
-     },
+      // var adapter = this.$$('jet-service-adapter');
+      // adapter.addEventListener('message', this._messageReceive);
+      // this._adapter = adapter;
+    },
     /**
      * Set an input element for suggestions.
      *
      * @param {Element} input Input element.
      */
-    setInput: function (input)
-    {
+    setInput: function (input) {
       // Catch invalid input
-      // if (!input || input.nodeType !== 1) {
-      //   return;
-      // }
+      if (!input || input.nodeType !== 1) {
+        return;
+      }
 
+      if (input.$$) { // Custom element
+        if (!input.$$('input')) {
+          return;
+        }
+      }
+      else if (input.tagName.toLowerCase() !== 'input') { // Native element
+        return;
+      }
 
-      // if (input.$$) { // Custom element
-      //   if (!input.$$('input')) {
-      //     return;
-      //   }
-      // }
-      // else if (input.tagName.toLowerCase() !== 'input') { // Native element
-      //   return;
-      // }
+      var prevInput = this.input;
+      if (prevInput) {
+        prevInput.removeEventListener('blur', this._inputBlur);
+        prevInput.removeEventListener('keydown', this._inputKeyDown);
+        prevInput.removeEventListener('input', this._inputTextChange);
+      }
 
-      // var prevInput = this.input;
-      // if (prevInput) {
-      //   prevInput.removeEventListener('blur', this._inputBlur);
-      //   prevInput.removeEventListener('keydown', this._inputKeyDown);
-      //   prevInput.removeEventListener('input', this._inputTextChange);
-      // }
-
-      //input.addEventListener('blur', this._inputBlur);
+      input.addEventListener('blur', this._inputBlur);
       input.addEventListener('keydown', this._inputKeyDown);
       input.addEventListener('input', this._inputTextChange);
       this.popup.target = input;
+
       this._setInput(input || undefined); // Force to be undefined in case of clearing
-      this.popup.show();
     },
     /**
      * Set the transformer callback function used to alter the AutoSuggest data.
      *
      * @param {Function} transformer Callback function.
      */
-//     setTransformer: function (transformer) {
+    setTransformer: function (transformer) {
+      console.log("setTransform");
+      if (typeof transformer !== 'function') {
+        return;
+      }
 
-//       if (typeof transformer !== 'function') {
-//         return;
-//       }
+      this._transformer = transformer;
+    },
+    /**
+     * If one of connected elements is focused, suggestion will not be hidden when input lose focus.
+     *
+     * @param {Element} element An element to be added to connected elements.
+     */
+    addConnectedElement: function (element) {
+      console.log("addConnectedElement");
+      if (!element || element.nodeType !== 1) {
+        return;
+      }
 
-//       this._transformer = transformer;
-//     },
-//     /**
-//      * If one of connected elements is focused, suggestion will not be hidden when input lose focus.
-//      *
-//      * @param {Element} element An element to be added to connected elements.
-//      */
-//     {console.log("3");
-//           if (!element || element.nodeType !== 1) {
-//         return;
-//       }
+      var connectedElements = this._connectedElements;
+      if (connectedElements.indexOf(element) < 0) {
+        element.addEventListener('blur', this._inputBlur);
+        connectedElements.push(element);
+      }
+    },
+    /**
+     * @param {Element} element An element to be removed from connected elements.
+     */
+    removeConnectedElement: function (element) {
+      console.log("remoceConnectedElement");
+      var connectedElements = this._connectedElements;
+      var index = connectedElements.indexOf(element);
+      if (index < 0) {
+        return;
+      }
 
-//       var connectedElements = this._connectedElements;
-//       if (connectedElements.indexOf(element) < 0) {
-//         element.addEventListener('blur', this._inputBlur);
-//         connectedElements.push(element);
-//       }
-//     },
-//     /**
-//      * @param {Element} element An element to be removed from connected elements.
-//      */
-//     removeConnectedElement: function (element) {
-//       console.log("4")
-//       var connectedElements = this._connectedElements;
-//       var index = connectedElements.indexOf(element);
-//       if (index < 0) {
-//         return;
-//       }
+      element.removeEventListener('blur', this._inputBlur);
+      connectedElements.splice(index, 1);
+    },
+    /**
+     * Show suggestions.
+     */
+    showSuggestions: function () {
+      console.log("showSuggestions");
+      var input = this.input;
 
-//       element.removeEventListener('blur', this._inputBlur);
-//       connectedElements.splice(index, 1);
-//     },
-//     /**
-//      * Show suggestions.
-//      */
-     showSuggestions: function () {
-//       console.log("5")
-       var input = this.input;
+      if (this.disabled || !input) {
+        return;
+      }
 
-//       if (this.disabled || !input) {
-//         return;
-//       }
+      this._highlightedIndexMoved = false;
+      this.popup.show();
+      this.list.setKeyInput(input); // Set list's key input only when popup is shown
 
-       this._highlightedIndexMoved = false;
-       this.popup.show();
-       this.list.setKeyInput(input); // Set list's key input only when popup is shown
-
-       input.focus();
-     },
-//     /**
-//      * Hide suggestions.
-//      */
+      input.focus();
+    },
+    /**
+     * Hide suggestions.
+     */
     hideSuggestions: function () {
+      console.log("hideSuggestions");
       this.popup.hide();
       this.list.setKeyInput(undefined); // Always clear list's key input
     },
-//     /**
-//      * @private
-//      */
-//     loadSuggestions: function () {
-//       console.log("7")
-//       if (this._blockSuggestions) {
-//         return;
-//       }
+    /**
+     * @private
+     */
+    loadSuggestions: function () {
+      console.log("loadSuggestions");
+      if (this._blockSuggestions) {
+        return;
+      }
 
-//       if (this.disabled || !this.input) {
-//         return;
-//       }
+      if (this.disabled || !this.input) {
+        return;
+      }
 
-//       var keyword = this.input.value;
-//       if (!keyword || keyword.charAt(0) === '\'') {
-//         this._terminateSuggestions();
-//         return;
-//       }
+      var keyword = this.input.value;
+      if (!keyword || keyword.charAt(0) === '\'') {
+        this._terminateSuggestions();
+        return;
+      }
 
-//       this._requestSuggestions(keyword);
-//     },
-//     _requestSuggestions: function (keyword) {
-//       console.log("8")
-//       console.log("keyword ",keyword)
-//        console.log("data ",this.data)
-//       if (!this.data) {
-//         this._blockSuggestions = false;
-//       }
+      this._requestSuggestions(keyword);
+    },
+    _requestSuggestions: function (keyword) {
+      console.log("_requestSuggestions");
 
-//       if (keyword !== this._keyword) {
-//         /**
-//          * keyword-change event, fired when keyword is changed.
-//          *
-//          * @event keyword-change
-//          */
-//         this.fire('keyword-change', { keyword: keyword, prevKeyword: this._keyword }, { bubbles: false });
+      if (!this.data) {
+        this._blockSuggestions = false;
+      }
 
-//         if (!this.data) {
-//           this._adapter.params = {
-//             query: keyword,
-//             profile: this.profile
-//           };
-//         }
-//         else {
-//           this._processSuggestionsData(this.data);
-//         }
-//       }
-//       else {
-//         var highlightedItem = this._initialHighlightedItem;
-//         if (highlightedItem) {
-//           this.list.highlightItem(highlightedItem);
-//         }
+      if (keyword !== this._keyword) {
+        /**
+         * keyword-change event, fired when keyword is changed.
+         *
+         * @event keyword-change
+         */
+        this.fire('keyword-change', { keyword: keyword, prevKeyword: this._keyword }, { bubbles: false });
+        console.log('Me !!!!!!' , this.data)
+        if (!this.data) {
+          var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
+            "previousPillType": "entity",
+            "nextPillType": "entity",
+            "queryTxt": keyword,
+            "fullTxt": keyword
+          });
 
-//         this._manageState();
-//       }
-//     },
-//     _terminateSuggestions: function () {
-//       console.log("9")
-//       this.hideSuggestions();
+          suggestPromise.then(function(resp){
+            console.log('Me !!!!!!2' , resp)
+            this._processSuggestionsData(resp);
+          }.bind(this));
+        }
+        else {
+          console.log('Me !!!!!!3' , resp)
+          this._processSuggestionsData(this.data);
+        }
+      }
+      else {
+        var highlightedItem = this._initialHighlightedItem;
+        if (highlightedItem) {
+          this.list.highlightItem(highlightedItem);
+        }
 
-//       if (!this.data) {
-//         this._blockSuggestions = true;
-//       }
-//     },
-      defer: function() {
+        this._manageState();
+      }
+    },
+    _terminateSuggestions: function () {
+      console.log("_terminateSuggestions");
+      this.hideSuggestions();
+
+      if (!this.data) {
+        this._blockSuggestions = true;
+      }
+    },
+         defer: function() {
         var deferred = {};
         var _callbacks = [];
         var _solved = false;
@@ -547,192 +553,54 @@
         }
         return result;
     },
-     _processSuggestionsData: function (data) {
-        var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
-          "previousPillType": "entity",
-          "nextPillType": "entity",
-          "queryTxt": "i",
-          "fullTxt": "i"
+    _processSuggestionsData: function (data) {
+      var transformedData = this._transformData(data);
+      console.log(transformedData)
+      this.list.data = transformedData;
 
+      console.log("_processSuggestionsData");
+      this._timer = null;
+
+      var suggestionsData = [];
+      var serachAllObj = {}
+
+      for(var i=0;i<transformedData.length;i++) {
+        if(transformedData[i].label === 'search all') {
+          serachAllObj = transformedData[i];
+        }else{
+          suggestionsData.push(transformedData[i]);
+        }
+      }
+
+      if (!this.moreSearchDisabled && serachAllObj) {
+        suggestionsData.push({
+          renderer: this._moreSearchItemRenderer,
+          value: {
+            asMoreLink: true,
+            url: serachAllObj.value.url,
+            keyword: serachAllObj.value.keyword
+          }
         });
+      }
 
-        suggestPromise.then(function(resp){
-          var transformedData = this._transformData(resp);
-          console.log(transformedData)
-          this.list.data = transformedData;
-          //var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
-          // console.log(this.list.data);
-          this._manageState();
-
-        }.bind(this));
-        // this.list.data = [ {
-        //   'label':'test',
-        //   'value':{"score": 2560315,
-        //             "significance": 1048580,
-        //             "navigation": null,
-        //             "title": "Philip Morris International Inc",
-        //             "subtitle": "Ordinary Share - MiFID Eligible Security - NYSE Consolidated - PM",
-        //             "symbol": "PM",
-        //             "cmd": "PM",
-        //             "relations": {},
-        //             "source": "12",
-        //             "id": 44744749,
-        //             "p": {
-        //               "OAPermID": "4298015178",
-        //               "RIC": "PM"
-        //             },
-        //             "ac": [
-        //               "A:1",
-        //               "A:1L"
-        //             ],
-        //             "s": "PM",
-        //             "vc": "EQ",
-        //             "st": "RIC"}
-
-        // },
-        // { 'label':'test2',
-        //   'value':{
-        //             "score": 2560143,
-        //             "significance": 1048580,
-        //             "navigation": null,
-        //             "title": "International Business Machines Corp",
-        //             "subtitle": "Ordinary Share - MiFID Eligible Security - NYSE Consolidated - IBM",
-        //             "symbol": "IBM",
-        //             "cmd": "IBM",
-        //             "relations": {},
-        //             "source": "12",
-        //             "id": 1097326,
-        //             "p": {
-        //               "OAPermID": "4295904307",
-        //               "RIC": "IBM"
-        //             },
-        //             "ac": [
-        //               "A:1",
-        //               "A:1L"
-        //             ],
-        //             "s": "IBM",
-        //             "vc": "EQ",
-        //             "st": "RIC"}
-        // }];this._manageState();
-    //}
-//           this.list.data = [{
-//   'label': 'GOOGL.O1',
-//   'value': {
-//     'ac': [
-//       'A:1',
-//       'A:1L'
-//     ],
-//     'cmd': 'GOOGL.O1',
-//     'id': 17739690,
-//     'p': {
-//       'OAPermID': '5030853586',
-//       'RIC': 'GOOGL.O'
-//     },
-//     's': 'GOOGL.O',
-//     'score': 2833305,
-//     'significance': 270340,
-//     'source': '12',
-//     'st': 'RIC',
-//     'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
-//     'symbol': 'GOOGL.O',
-//     'title': 'Alphabet Inc (<b>Google</b> Inc)',
-//     'vc': 'EQ'
-//   },
-//   'highlighted': false
-// },
-// {
-//   'label': 'GOOGL.O2',
-//   'value': {
-//     'ac': [
-//       'A:1',
-//       'A:1L'
-//     ],
-
-//     'cmd': 'GOOGL.O2',
-//     'id': 17739690,
-//     'p': {
-//       'OAPermID': '5030853586',
-//       'RIC': 'GOOGL.O'
-//     },
-//     's': 'GOOGL.O',
-//     'score': 2833305,
-//     'significance': 270340,
-//     'source': '12',
-//     'st': 'RIC',
-//     'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
-//     'symbol': 'GOOGL.O',
-//     'title': 'Alphabet Inc (<b>Google</b> Inc)',
-//     'vc': 'EQ'
-//   },
-//   'highlighted': true
-// },
-// {
-//   'label': 'GOOGL.O3',
-//   'value': {
-//     'ac': [
-//       'A:1',
-//       'A:1L'
-//     ],
-
-//     'cmd': 'GOOGL.O3',
-//     'id': 17739690,
-//     'p': {
-//       'OAPermID': '5030853586',
-//       'RIC': 'GOOGL.O'
-//     },
-//     's': 'GOOGL.O',
-//     'score': 2833305,
-//     'significance': 270340,
-//     'source': '12',
-//     'st': 'RIC',
-//     'subtitle': 'Ordinary Share - Class A - NASDAQ Global Select Consolidated - GOOGL',
-//     'symbol': 'GOOGL.O',
-//     'title': 'Alphabet Inc (<b>Google</b> Inc)',
-//     'vc': 'EQ'
-//   },
-//   'highlighted': false
-// }];this._manageState();
-
-
-
-//       console.log("10")
-//       this._timer = null;
-// //console.log("data",data);
-//       // var transformedData = this._transformer != null ? this._transformer(data) : data;
-//       // var suggestionsData = transformedData.suggestions && transformedData.suggestions.length ? transformedData.suggestions.slice() : []; // Clone suggestions data
-//       // var searchUrl = transformedData.searchUrl;
-
-//       // if (!this.moreSearchDisabled && searchUrl) {
-//       //   suggestionsData.push({
-//       //     renderer: this._moreSearchItemRenderer,
-//       //     value: {
-//       //       asMoreLink: true,
-//       //       url: searchUrl,
-//       //       keyword: transformedData.params.query
-//       //     }
-//       //   });
-//       // }
-
-      //this.list.data = suggestionsData;
-
-
-     },
+      this.list.data = suggestionsData;
+      this._manageState();
+    },
     _manageState: function () {
-
+      console.log("_manageState");
       var list = this.list;
-      console.log("manageState")
 
       // Hide suggestions if suggestions is blocked or not available
-
-      // if (this._blockSuggestions || !list.data.length) {
-      //   this.hideSuggestions();
-      //   return;
-      // }
+      if (this._blockSuggestions || !list.data.length) {
+        this.hideSuggestions();
+        return;
+      }
 
       // Update items
-       // if (!list.itemRenderer) {
-       //   list.setItemRenderer(this._suggestionItemRenderer);
-       // }
+      if (!list.itemRenderer) {
+        list.setItemRenderer(this._suggestionItemRenderer);
+      }
+
       // Select highlighted item if ENTER key is committed
       // Otherwise, force to show suggestions
       if (this._enterEvent) {
@@ -745,196 +613,200 @@
 
       this._initialHighlightedItem = list.highlightedItem;
     },
-     _selectHighlightedItem: function (opt_originalEvent) {
+    _selectHighlightedItem: function (opt_originalEvent) {
+      console.log("_selectHighlightedItem");
       var list = this.list;
       list.selectItem(list.highlightedItem, opt_originalEvent);
     },
-//     _getMoreSearchItem: function () {
-//       if (this.moreSearchDisabled) {
-//         return null;
-//       }
+    _getMoreSearchItem: function () {
+      console.log("_getMoreSearchItem");
+      if (this.moreSearchDisabled) {
+        return null;
+      }
 
-//       var list = this.list;
-//       var items = list.getItems();
-//       return list.getItemByIndex(items.length - 1);
-//     },
-//     _extractFieldValue: function (data, field) {
-//       console.log("12")
-//       if (!data || !field) {
-//         return null;
-//       }
+      var list = this.list;
+      var items = list.getItems();
+      return list.getItemByIndex(items.length - 1);
+    },
+    _extractFieldValue: function (data, field) {
+      console.log("_extractFieldValue");
+      if (!data || !field) {
+        return null;
+      }
 
-//       var value = data;
-//       var paths = field.split('/');
+      var value = data;
+      var paths = field.split('/');
 
-//       var i = 0;
-//       do {
-//         value = value[paths[i++]];
-//       }
-//       while (i < paths.length && value);
+      var i = 0;
+      do {
+        value = value[paths[i++]];
+      }
+      while (i < paths.length && value);
 
-//       return value || null;
-//     },
-     _suggestionItemRenderer: function (item) {
+      return value || null;
+    },
+    _suggestionItemRenderer: function (item) {
+      console.log("_suggestionItemRenderer");
+      var data = item.value;
+      var asSub = data.asSub === true;
+      var columnElement;
+      var contentElement;
 
-       var data = item.value;
-//       var asSub = data.asSub === true;
-//       var columnElement;
-//       var contentElement;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'suggestion';
 
-//       var wrapper = document.createElement('div');
-//       wrapper.className = 'suggestion';
+      if (asSub) {
+        wrapper.classList.add('sub');
+      }
 
-//       // if (asSub) {
-//       //   wrapper.classList.add('sub');
-//       // }
+      var fieldMapping = this.fieldMapping || {};
 
-//       var fieldMapping = this.fieldMapping || {};
+      // Asset column
+      columnElement = document.createElement('div');
+      columnElement.className = 'column-asset';
+      wrapper.appendChild(columnElement);
 
-//       // Asset column
-//       columnElement = document.createElement('div');
-//       columnElement.className = 'column-asset';
-//       wrapper.appendChild(columnElement);
+      if (!asSub) {
+        var assetValue = this._extractFieldValue(data, fieldMapping.asset) || data.vc;
+        if (assetValue) {
+          contentElement = document.createElement('div');
+          contentElement.className = 'asset';
+          contentElement.innerHTML = assetValue;
+          columnElement.appendChild(contentElement);
+        }
+      }
 
-//       // if (!asSub) {
-//       //   var assetValue = this._extractFieldValue(data, fieldMapping.asset) || data.vc;
-//       //   if (assetValue) {
-//       //     contentElement = document.createElement('div');
-//       //     contentElement.className = 'asset';
-//       //     contentElement.innerHTML = assetValue;
-//       //     columnElement.appendChild(contentElement);
-//       //   }
-//       // }
+      // Info column
+      columnElement = document.createElement('div');
+      columnElement.className = 'column-info';
+      wrapper.appendChild(columnElement);
 
-//       // Info column
-//       columnElement = document.createElement('div');
-//       columnElement.className = 'column-info';
-//       wrapper.appendChild(columnElement);
+      var titleValue = this._extractFieldValue(data, fieldMapping.title) || data.title;
+      if (titleValue) {
+        contentElement = document.createElement('div');
+        contentElement.className = 'title';
+        contentElement.innerHTML = titleValue;
+        contentElement.title = contentElement.textContent;
+        columnElement.appendChild(contentElement);
+      }
 
-//       // var titleValue = this._extractFieldValue(data, fieldMapping.title) || data.title;
-//       // if (titleValue) {
-//       //   contentElement = document.createElement('div');
-//       //   contentElement.className = 'title';
-//       //   contentElement.innerHTML = titleValue;
-//       //   contentElement.title = contentElement.textContent;
-//       //   columnElement.appendChild(contentElement);
-//       // }
+      if (!asSub) {
+        var subtitleValue = this._extractFieldValue(data, fieldMapping.subtitle) || data.subtitle;
+        if (subtitleValue) {
+          contentElement = document.createElement('div');
+          contentElement.className = 'subtitle';
+          contentElement.innerHTML = subtitleValue;
+          contentElement.title = contentElement.textContent;
+          columnElement.appendChild(contentElement);
+        }
+      }
 
-//       // if (!asSub) {
-//       //   var subtitleValue = this._extractFieldValue(data, fieldMapping.subtitle) || data.subtitle;
-//       //   if (subtitleValue) {
-//       //     contentElement = document.createElement('div');
-//       //     contentElement.className = 'subtitle';
-//       //     contentElement.innerHTML = subtitleValue;
-//       //     contentElement.title = contentElement.textContent;
-//       //     columnElement.appendChild(contentElement);
-//       //   }
-//       // }
+      // Symbol column
+      columnElement = document.createElement('div');
+      columnElement.className = 'column-symbol';
+      wrapper.appendChild(columnElement);
 
-//       // Symbol column
-//       columnElement = document.createElement('div');
-//       columnElement.className = 'column-symbol';
-//       wrapper.appendChild(columnElement);
+      var symbolValue = this._extractFieldValue(data, fieldMapping.symbol) || data.symbol;
+      if (symbolValue) {
+        contentElement = document.createElement('div');
+        contentElement.className = 'symbol';
+        contentElement.innerHTML = symbolValue;
+        contentElement.title = contentElement.textContent;
+        columnElement.appendChild(contentElement);
+      }
 
-//       // var symbolValue = this._extractFieldValue(data, fieldMapping.symbol) || data.symbol;
-//       // if (symbolValue) {
-//       //   contentElement = document.createElement('div');
-//       //   contentElement.className = 'symbol';
-//       //   contentElement.innerHTML = symbolValue;
-//       //   contentElement.title = contentElement.textContent;
-//       //   columnElement.appendChild(contentElement);
-//       // }
+      return wrapper;
+    },
+    _moreSearchItemRenderer: function (item) {
+      console.log("_moreSearchItemRenderer");
+      var wrapper = document.createElement('div');
+      wrapper.className = 'more-search';
 
-//       return wrapper;
-     },
-//     _moreSearchItemRenderer: function (item) {
-//       console.log("14")
-//       var wrapper = document.createElement('div');
-//       wrapper.className = 'more-search';
+      var column;
 
-//       var column;
+      // Info column
+      var template = this.moreSearchText || this.interpret.defaultMoreSearchText;
+      var keyword = item.value.keyword || '';
+      column = document.createElement('div');
+      column.className = 'column-info';
+      column.innerHTML = template.replace(/\{0\}/g, '<b>' + keyword + '</b>');
+      wrapper.appendChild(column);
 
-//       // Info column
-//       var template = this.moreSearchText || this.interpret.defaultMoreSearchText;
-//       var keyword = item.value.keyword || '';
-//       column = document.createElement('div');
-//       column.className = 'column-info';
-//       column.innerHTML = template.replace(/\{0\}/g, '<b>' + keyword + '</b>');
-//       wrapper.appendChild(column);
+      // Command column
+      column = document.createElement('div');
+      column.className = 'column-command';
+      column.textContent = 'Shift+Enter'; // FIXME: Support localize
+      wrapper.appendChild(column);
 
-//       // Command column
-//       column = document.createElement('div');
-//       column.className = 'column-command';
-//       column.textContent = 'Shift+Enter'; // FIXME: Support localize
-//       wrapper.appendChild(column);
+      return wrapper;
+    },
+    _moreSearchTextChange: function (newValue, oldValue) {
+      console.log("_moreSearchTextChange");
+      if (typeof newValue !== 'string') {
+        this.moreSearchText = null;
+      }
+    },
+    _dataChange: function (newValue, oldValue) {
+      console.log("_dataChange");
+      if (newValue) {
+        this._processSuggestionsData(newValue);
+      }
+    },
+    _inputBlur: function (event) {
+      console.log("_inputBlur");
+      var _this = this;
+      var checkFocus = function (element) {
+        var node = document.activeElement;
+        while (node) {
+          if (node === element) {
+            return true;
+          }
+          node = node.parentNode;
+        }
+        return false;
+      };
 
-//       return wrapper;
-//     },
-//     _moreSearchTextChange: function (newValue, oldValue) {
-//       if (typeof newValue !== 'string') {
-//         this.moreSearchText = null;
-//       }
-//     },
-//     _dataChange: function (newValue, oldValue) {
-//       if (newValue) {
-//         this._processSuggestionsData(newValue);
-//       }
-//     },
-//     _inputBlur: function (event) {
-//       var _this = this;
-//       var checkFocus = function (element) {
-//         var node = document.activeElement;
-//         while (node) {
-//           if (node === element) {
-//             return true;
-//           }
-//           node = node.parentNode;
-//         }
-//         return false;
-//       };
+      // Add delay to prevent undesired suggestions hiding
+      window.setTimeout(function () {
+        console.log("");
+        // Check if input is focus
+        var notFocus = !checkFocus(_this.input);
 
-//       // Add delay to prevent undesired suggestions hiding
-//       window.setTimeout(function () {
-//         // Check if input is focus
-//         var notFocus = !checkFocus(_this.input);
+        // Check if connected element is focused
+        if (notFocus) {
+          var connectedElements = _this._connectedElements;
+          for (var i = 0; i < connectedElements.length; ++i) {
+            if (checkFocus(connectedElements[i])) {
+              notFocus = false;
+              break;
+            }
+          }
+        }
 
-//         // Check if connected element is focused
-//         if (notFocus) {
-//           var connectedElements = _this._connectedElements;
-//           for (var i = 0; i < connectedElements.length; ++i) {
-//             if (checkFocus(connectedElements[i])) {
-//               notFocus = false;
-//               break;
-//             }
-//           }
-//         }
+        // Terminate suggestions if neither input nor any of connected elements is focused
+        if (notFocus) {
+          _this._terminateSuggestions();
+        }
+      }, 500);
+    },
+    _inputKeyDown: function (event) {
+      console.log("_inputKeyDown");
+      if (this.disabled) {
+        return;
+      }
 
-//         // Terminate suggestions if neither input nor any of connected elements is focused
-//         if (notFocus) {
-//           _this._terminateSuggestions();
-//         }
-//       }, 500);
-//     },
-     _inputKeyDown: function (event) {
-//       if (this.disabled) {
-//         return;
-//       }
-
-       //var popupVisible = this.popup.isShown();
-       var input = this.input;
-
-//       var list = this.list;
-//       var item;
-//       console.log("input",input);
-       this._processSuggestionsData(input);
-      this.showSuggestions();
+      var popupVisible = this.popup.isShown();
+      var input = this.input;
+      var list = this.list;
+      var item;
+      console.log("input",input);
       switch (event.keyCode) {
         case 13: // ENTER
           if (this.autoSelectDisabled) {
             if (popupVisible) {
               this._selectHighlightedItem(event);
             }
-//            this._terminateSuggestions();
+            this._terminateSuggestions();
           }
           else if (!popupVisible) {
             this._enterEvent = event;
@@ -942,57 +814,57 @@
           }
           break;
 
-//         case 27: // ESC
-//           this._terminateSuggestions();
-//           if (!popupVisible) {
-//             return;
-//           }
-//           break;
+        case 27: // ESC
+          this._terminateSuggestions();
+          if (!popupVisible) {
+            return;
+          }
+          break;
 
-//         case 32: // SPACE
-//           if (popupVisible && this._highlightedIndexMoved) {
-//             item = list.highlightedItem;
-//             if (item && item.value) {
-//               input.value = item.label;
-//             }
-//           }
-//           return;
+        case 32: // SPACE
+          if (popupVisible && this._highlightedIndexMoved) {
+            item = list.highlightedItem;
+            if (item && item.value) {
+              input.value = item.label;
+            }
+          }
+          return;
 
-//         case 38:
+        case 38:
         case 40:
           this._highlightedIndexMoved = true;
           break;
 
-//         default:
-//           return;
-       }
+        default:
+          return;
+      }
 
-//       event.preventDefault();
-//       event.stopPropagation();
-     },
-//     _inputTextChange: function (event) {
-//       console.log("16")
-//       if (this.disabled) {
-//         return;
-//       }
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    _inputTextChange: function (event) {
+      console.log("_inputTextChange");
+      if (this.disabled) {
+        return;
+      }
 
-//       this._blockSuggestions = false; // Allow loading suggestions when keyword is changed
+      this._blockSuggestions = false; // Allow loading suggestions when keyword is changed
 
-//       if (this._timer) {
-//         window.clearTimeout(this._timer);
-//       }
+      if (this._timer) {
+        window.clearTimeout(this._timer);
+      }
 
-//       if (this.input.value.length > 1) {
-//         this._timer = window.setTimeout(this.loadSuggestions.bind(this), 200);
-//       }
-//       else {
-//         this.loadSuggestions();
-//       }
-//     },
-     _itemHighlight: function (event) {
-
+      if (this.input.value.length > 1) {
+        this._timer = window.setTimeout(this.loadSuggestions.bind(this), 200);
+      }
+      else {
+        this.loadSuggestions();
+      }
+    },
+    _itemHighlight: function (event) {
+      console.log("_itemHighlight");
       this._highlightedIndexMoved = true;
-      console.log("hilight");
+
       /**
        * item-highlight event, fired when any suggestion item is highlighted.
        *
@@ -1001,6 +873,10 @@
       this.fire('item-highlight', event.detail, { bubbles: false });
     },
     _itemSelect: function (event) {
+      console.log("_itemSelect");
+      if (this._blockSuggestions) {
+        return;
+      }
 
       var detail = event.detail;
       var item = detail.item;
@@ -1013,31 +889,32 @@
       // Block further come-in data because use has already select preferred item
       this._blockSuggestions = true;
 
-      // var moreSearch = item.value.asMoreLink;
+      var moreSearch = item.value.asMoreLink;
 
-      // // Support SHIFT + ENTER key for moreSearch
-      // if (!this.moreSearchDisabled) {
-      //   var originalEvent = detail.originalEvent;
-      //   if (originalEvent && originalEvent.shiftKey && originalEvent.type === 'keydown') {
-      //     moreSearch = true;
-      //     item = this._getMoreSearchItem();
-      //   }
-      // }
+      // Support SHIFT + ENTER key for moreSearch
+      if (!this.moreSearchDisabled) {
+        var originalEvent = detail.originalEvent;
+        if (originalEvent && originalEvent.shiftKey && originalEvent.type === 'keydown') {
+          moreSearch = true;
+          item = this._getMoreSearchItem();
+        }
+      }
 
-      //if (moreSearch) {
-        // detail = {
-        //   url: item.value.url,
-        //   keyword: item.value.keyword
-        // };
+      if (moreSearch) {
+        console.log("");
+        detail = {
+          url: item.value.url,
+          keyword: item.value.keyword
+        };
 
-        // *
-        //  * more-search event, fired when moreSearch item is selected.
-        //  *
-        //  * @event more-search
-
-        // this.fire('more-search', detail, { bubbles: false });
-      //}
-      //else {
+        /**
+         * more-search event, fired when moreSearch item is selected.
+         *
+         * @event more-search
+         */
+        this.fire('more-search', detail, { bubbles: false });
+      }
+      else {
         input.value = item.label;
 
         /**
@@ -1046,10 +923,10 @@
          * @event item-select
          */
         this.fire('item-select', detail, { bubbles: false });
-      //}
+      }
     },
     _itemContextMenu: function (event) {
-      console.log("17")
+      console.log("_itemContextMenu");
       var detail = event.detail;
 
       detail.originalEvent.preventDefault();
@@ -1063,7 +940,7 @@
       this.fire('item-contextmenu', detail, { bubbles: false });
     },
     _messageReceive: function (event) {
-
+      console.log("_messageReceive");
       if (this._blockSuggestions) {
         return;
       }
