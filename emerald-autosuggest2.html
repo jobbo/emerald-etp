@@ -619,7 +619,7 @@
     _selectHighlightedItem: function (opt_originalEvent) {
       console.log("_selectHighlightedItem");
       var list = this.list;
-      list.selectItem(list.highlightedItem, opt_originalEvent);
+      return list.selectItem(list.highlightedItem, opt_originalEvent);
     },
     _getMoreSearchItem: function () {
       console.log("_getMoreSearchItem");
@@ -810,9 +810,12 @@
         case  9: // TAB
           if (this.autoSelectDisabled) {
             if (popupVisible) {
-              this._selectHighlightedItem(event);
+              if(!this._selectHighlightedItem(event)) {
+                this.fire('item-default', {originalEvent : event});
+              }
             }
             this._terminateSuggestions();
+            //this.fire('highlight-selected');
           }
           else if (!popupVisible) {
             this._enterEvent = event;

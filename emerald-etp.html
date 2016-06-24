@@ -98,6 +98,20 @@
             },
         }
     },
+    listeners: {
+        'myAutoSuggest.item-select': 'autosuggestItemSelected',
+        'myAutoSuggest.item-default': 'autosuggestItemDefault'
+    },
+    autosuggestItemSelected: function(e, detail) {
+        let targetInput = e.detail.originalEvent.currentTarget;
+         let tag = detail.item.label;
+         this.addTag(tag, targetInput);
+    },
+    autosuggestItemDefault: function(e, detail) {
+        let targetInput = e.detail.originalEvent.currentTarget;
+        let tag = targetInput.value;
+        this.addTag(tag, targetInput);
+    },
     created: function() {
 
     },
@@ -114,9 +128,11 @@
         myAutoSuggest.setInput(element);
         let allowDelete = false;
         element.addEventListener("keydown", (event) => {
+
             let tag = element.value;
             if (event.keyCode === 13) { //enter
-                this.addTag(tag, event.currentTarget);
+                // no more add item on enter
+                //this.addTag(tag, event.currentTarget);
             } else if (event.keyCode === 188) { //comma
                 event.preventDefault();
                 this.addTag(tag, event.currentTarget);
