@@ -109,7 +109,7 @@
         'myAutoSuggest.item-default': 'autosuggestItemDefault'
     },
     autosuggestItemSelected: function(e, detail) {
-        let targetInput = e.detail.originalEvent.currentTarget;
+        let targetInput = e.detail.input;
          let tag = detail.item.label;
          this.addTag(tag, targetInput);
     },
@@ -130,6 +130,11 @@
         tagInputMain.addEventListener("focus", (event) => {
             self.bindInputEvent(self.querySelector('#tagInputMain'));
         });
+        // var etpTagInput = document.getElementById('etpTagInput');
+        // tagInputMain.addEventListener("focus", (event) => {
+        //     self.bindInputEvent(self.querySelector('#tagInputMain'));
+        // });
+
     },
     bindInputEvent: function(element) {
         myAutoSuggest.setInput(element);
@@ -141,8 +146,8 @@
                 // no more add item on enter
                 //this.addTag(tag, event.currentTarget);
             } else if (event.keyCode === 188) { //comma
-                event.preventDefault();
-                this.addTag(tag, event.currentTarget);
+                // event.preventDefault();
+                // this.addTag(tag, event.currentTarget);
             } else if (event.keyCode === 37) { //left
                 event.preventDefault();
                 event.currentTarget.previousElementSibling.focus();
@@ -169,7 +174,6 @@
                 event.preventDefault();
                 event.currentTarget.nextElementSibling.focus();
             } else if (event.keyCode === 8 || event.keyCode === 46) { //backspace or delete
-                debugger;
                 event.preventDefault();
                 event.returnValue = false;
 
@@ -187,7 +191,7 @@
         $pillInput.id = "tagInput";
         $pillInput.className = "pillInput";
         Polymer.dom(this.$$('.etpTagInput')).insertBefore($pillInput, beforeNode);
-        this.bindInputEvent($pillInput);
+        //this.bindInputEvent($pillInput);
         this.allInputBox.push($pillInput);
         $pillInput.addEventListener("focus", (event) => {
             self.bindInputEvent($pillInput);
