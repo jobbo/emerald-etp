@@ -96,6 +96,12 @@
             value: function () {
             return [];
             },
+        },
+        allInputBox : {
+            type: Array,
+            value: function () {
+            return [];
+            },
         }
     },
     created: function() {
@@ -106,6 +112,7 @@
         var tagInputMain = document.getElementById('tagInputMain');
         var myAutoSuggest = document.getElementById('myAutoSuggest');
         this.bindInputEvent(this.querySelector('#tagInputMain'));
+        this.allInputBox.push(tagInputMain);
         tagInputMain.addEventListener("focus", (event) => {
             self.bindInputEvent(self.querySelector('#tagInputMain'));
         });
@@ -165,6 +172,7 @@
         $pillInput.className = "pillInput";
         Polymer.dom(this.$$('.etpTagInput')).insertBefore($pillInput, beforeNode);
         this.bindInputEvent($pillInput);
+        this.allInputBox.push($pillInput);
         $pillInput.addEventListener("focus", (event) => {
             self.bindInputEvent($pillInput);
         });
@@ -175,7 +183,10 @@
     addTag: function(tag, currentInputElement) {
         if (this.tags.indexOf(tag) === -1) {
             this.tags.push(tag);
-            this.$.tagInputMain.value = "";
+            this.allInputBox.forEach( function (inputBox) {
+                inputBox.value = "";
+            });
+            // this.$.tagInputMain.value = "";
             this._addTag(tag, currentInputElement)
             //this.render();
         } else {
