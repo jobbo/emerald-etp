@@ -529,6 +529,7 @@
     },
     _transformData: function (data) {
         var result = [];
+        var tmpLabel = '';
         for(var i = 0; data.results.length > i; i++){
           var objType = data.results[i].grpType;
           for(var j=0;j< data.results[i].resultList.length;j++){
@@ -536,16 +537,18 @@
             if(objType === 'entity'){
               for(var x=0;x<resultListObj.hits.length;x++){
                 var hitObj = resultListObj.hits[x];
+                tmpLabel = hitObj.title === 'search all' ? hitObj.title : hitObj.symbol;
                 hitObj.objType = objType;
                 result.push({
-                  label: hitObj.title,
+                  label: tmpLabel,
                   value:hitObj
                 });
               }
             }else{
+              tmpLabel = resultListObj.title === 'search all' ? resultListObj.title : resultListObj.symbol;
               resultListObj.objType = objType;
               result.push({
-                label: resultListObj.title,
+                label: tmpLabel,
                 value:resultListObj
               });
             }
