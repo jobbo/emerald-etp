@@ -102,7 +102,14 @@
             value: function () {
             return [];
             },
-        }
+        },
+        previousPillType: {
+            type: String
+        },
+        nextPillType: {
+            type: String
+        },
+
     },
     listeners: {
         'myAutoSuggest.item-select': 'autosuggestItemSelected',
@@ -111,10 +118,13 @@
     autosuggestItemSelected: function(e, detail) {
         let targetInput = e.detail.input;
          let tag = detail.item.label;
-         this.addTag(tag, targetInput);
+         let objType = detail.item.data.value.objType;
+         this.addTag(tag, targetInput, objType);
+         debugger;
     },
     autosuggestItemDefault: function(e, detail) {
         let targetInput = e.detail.originalEvent.currentTarget;
+        let objType = detail.item.data.value.objType;
         let tag = targetInput.value;
         this.addTag(tag, targetInput);
     },
@@ -200,14 +210,14 @@
     removeInput: function() {
 
     },
-    addTag: function(tag, currentInputElement) {
+    addTag: function(tag, currentInputElement, objType) {
         if (this.tags.indexOf(tag) === -1) {
             this.tags.push(tag);
             this.allInputBox.forEach( function (inputBox) {
                 inputBox.value = "";
             });
             // this.$.tagInputMain.value = "";
-            this._addTag(tag, currentInputElement)
+            this._addTag(tag, currentInputElement, objType)
             //this.render();
         } else {
             var $element = this.querySelector('[data-tag="' + tag + '"]');
@@ -220,7 +230,7 @@
     get value() {
         return this.tags.join(",");
     },
-    _addTag: function(tag, currentInputElement) {
+    _addTag: function(tag, currentInputElement, objType) {
         let $tag = document.createElement("div");
         console.log($tag);
         $tag.className = "etpTag";
@@ -231,6 +241,7 @@
             this.deleteTag(event.currentTarget.parentElement);
         });
         $tag.dataset.tag = tag;
+        $tag.dataset.type = objType;
         $tag.tabIndex = 0;
         $tag.innerHTML = tag;
         Polymer.dom($tag).appendChild($remove);
