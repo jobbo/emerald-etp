@@ -280,6 +280,7 @@
         this.tags = [];
     },
     deleteTag: function(currentTagElement) {
+        this.allInputBox.splice(this.allInputBox.indexOf(currentTagElement.previousElementSibling), 1);
         let tag = currentTagElement.firstChild.textContent;
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement.previousElementSibling);
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement);
