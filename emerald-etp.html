@@ -149,6 +149,9 @@
     bindInputEvent: function(element) {
         myAutoSuggest.setInput(element);
         let allowDelete = false;
+        this.allInputBox.forEach(function(inputBox) {
+            this.unlisten(Polymer.dom(inputBox), 'keydown', function() {});
+        });
         element.addEventListener("keydown", (event) => {
 
             let tag = element.value;
@@ -291,6 +294,7 @@
         this.tags = [];
     },
     deleteTag: function(currentTagElement) {
+        this.allInputBox.splice(this.allInputBox.indexOf(currentTagElement.previousElementSibling), 1);
         let tag = currentTagElement.firstChild.textContent;
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement.previousElementSibling);
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement);
