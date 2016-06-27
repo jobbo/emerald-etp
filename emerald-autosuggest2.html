@@ -427,7 +427,6 @@
          * @event keyword-change
          */
         this.fire('keyword-change', { keyword: keyword, prevKeyword: this._keyword }, { bubbles: false });
-        console.log('Me !!!!!!' , this.data)
         if (!this.data) {
           var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
             "previousPillType": "entity",
@@ -436,13 +435,11 @@
             "fullTxt": keyword
           });
 
-          suggestPromise.then(function(resp){
-            console.log('Me !!!!!!2' , resp)
+          suggestPromise.then(function(resp) {
             this._processSuggestionsData(resp);
           }.bind(this));
         }
         else {
-          console.log('Me !!!!!!3' , resp)
           this._processSuggestionsData(this.data);
         }
       }
@@ -463,29 +460,29 @@
         this._blockSuggestions = true;
       }
     },
-         defer: function() {
-        var deferred = {};
-        var _callbacks = [];
-        var _solved = false;
-        var _arg;
-        deferred.promise = {
-            then: function (callback) {
-                if (_solved === true) {
-                    setTimeout(function () {
-                        callback(_arg);
-                    }, 0);
-                }
-                _callbacks.push(callback);
-            }
-        };
-        deferred.resolve = function (arg) {
-            _callbacks.forEach(function (callback) {
-                callback(arg);
-            });
-            _solved = true;
-            _arg = arg;
-        };
-        return deferred;
+    defer: function() {
+      var deferred = {};
+      var _callbacks = [];
+      var _solved = false;
+      var _arg;
+      deferred.promise = {
+          then: function (callback) {
+              if (_solved === true) {
+                  setTimeout(function () {
+                      callback(_arg);
+                  }, 0);
+              }
+              _callbacks.push(callback);
+          }
+      };
+      deferred.resolve = function (arg) {
+        _callbacks.forEach(function (callback) {
+          callback(arg);
+        });
+        _solved = true;
+        _arg = arg;
+      };
+      return deferred;
     },
     transformResponse: function (data) {
         var JSON_START = /^\s*(\[|\{[^\{])/,
@@ -497,7 +494,7 @@
 
         return data;
     },
-   httpPost: function(url, data) {
+    httpPost: function(url, data) {
         var deferred = this.defer();
         var xhr = new XMLHttpRequest();
 
