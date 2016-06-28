@@ -83,7 +83,7 @@
     </style>
     <div class="etpTagInput">
         <input type="text" id="tagInputMain" />
-        <emerald-autosuggest2 id="myAutoSuggest"></emerald-autosuggest2>
+        <emerald-autosuggest2 id="myAutoSuggest" previous-pill-type={{previousPillType}} next-pill-type={{nextPillType}} full-txt={{fullTxt}}></emerald-autosuggest2>
         <!-- Start Tag Elements -->
     </div>
 </template>
@@ -109,18 +109,21 @@
         nextPillType: {
             type: String
         },
+        fullTxt: {
+            type: String
+        }
 
     },
     listeners: {
         'myAutoSuggest.item-select': 'autosuggestItemSelected',
-        'myAutoSuggest.item-default': 'autosuggestItemDefault'
+        'myAutoSuggest.item-default': 'autosuggestItemDefault',
+        'myAutoSuggest.inputTextChange': '_getFullText'
     },
     autosuggestItemSelected: function(e, detail) {
         let targetInput = e.detail.input;
-         let tag = detail.item.label;
-         let objType = detail.item.data.value.objType;
-         this.addTag(tag, targetInput, objType);
-         debugger;
+        let tag = detail.item.label;
+        let objType = detail.item.data.value.objType;
+        this.addTag(tag, targetInput, objType);
     },
     autosuggestItemDefault: function(e, detail) {
         let targetInput = e.detail.originalEvent.currentTarget;
@@ -207,6 +210,8 @@
         //this.bindInputEvent($pillInput);
         this.allInputBox.push($pillInput);
         $pillInput.addEventListener("focus", (event) => {
+            this.previousPillType = event.currentTarget.previousElementSibling.getAttribute('data-type');
+            this.nextPillType = event.currentTarget.nextElementSibling.getAttribute('data-type');
             self.bindInputEvent($pillInput);
         });
     },
@@ -320,7 +325,24 @@
         // else if (this.srcUrl && !lastResponse) {
         //   this.animation = true;
         // }
-    }
+    },
+    _getFullText: function (e, detail) {
+        this.previousPillType = detail.input.previousElementSibling ? detail.input.previousElementSibling.getAttribute('data-type') : null;
+        this.nextPillType = detail.input.nextElementSibling ? detail.input.nextElementSibling.getAttribute('data-type') : null;
+        this.fullTxt = '';
+        var node = detail.input.parentNode.firstChild.nextElementSibling ;
+        node = node.nextElementSibling || node.nextSibling;
+        if(node.value != ''){
+            this.fullTxt += (node.value || node.innerText);
+            node = node.nextElementSibling || node.nextSibling;
+        }
+        while( node && node.nodeType === 1 && node !== this ) {
+            if(node.value != ''){
+                this.fullTxt += ' ' + (node.value || node.innerText);
+            }
+                node = node.nextElementSibling || node.nextSibling;
+        }
+    },
   });
 </script>
 </dom-module>
