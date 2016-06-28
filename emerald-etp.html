@@ -210,8 +210,6 @@
         //this.bindInputEvent($pillInput);
         this.allInputBox.push($pillInput);
         $pillInput.addEventListener("focus", (event) => {
-            this.previousPillType = event.currentTarget.previousElementSibling.getAttribute('data-type');
-            this.nextPillType = event.currentTarget.nextElementSibling.getAttribute('data-type');
             self.bindInputEvent($pillInput);
         });
     },
@@ -330,18 +328,15 @@
         this.previousPillType = detail.input.previousElementSibling ? detail.input.previousElementSibling.getAttribute('data-type') : null;
         this.nextPillType = detail.input.nextElementSibling ? detail.input.nextElementSibling.getAttribute('data-type') : null;
         this.fullTxt = '';
-        var node = detail.input.parentNode.firstChild.nextElementSibling ;
-        node = node.nextElementSibling || node.nextSibling;
-        if(node.value != ''){
-            this.fullTxt += (node.value || node.innerText);
-            node = node.nextElementSibling || node.nextSibling;
-        }
-        while( node && node.nodeType === 1 && node !== this ) {
-            if(node.value != ''){
+        var node = detail.input.parentNode.firstChild.nextElementSibling.nextElementSibling;
+
+        while( node && node.nodeType === 1) {
+            if(node.value !== ''){
                 this.fullTxt += ' ' + (node.value || node.innerText);
             }
                 node = node.nextElementSibling || node.nextSibling;
         }
+        this.fullTxt = this.fullTxt.trim();
     },
   });
 </script>
