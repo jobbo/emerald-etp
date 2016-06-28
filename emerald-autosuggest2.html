@@ -532,21 +532,29 @@
           for(var j=0;j< data.results[i].resultList.length;j++){
             var resultListObj = data.results[i].resultList[j];
             if(objType === 'entity'){
-              for(var x=0;x<resultListObj.hits.length;x++){
+              for(var x=0;x<resultListObj.hits.length;x++) {
                 var hitObj = resultListObj.hits[x];
                 tmpLabel = hitObj.title === 'search all' ? hitObj.title : hitObj.symbol;
                 hitObj.objType = objType;
                 result.push({
                   label: tmpLabel,
-                  value:hitObj
+                  value: hitObj
                 });
               }
-            }else{
+            }
+            else if(objType === 'params') {
+              tmpLabel = resultListObj.title;
+              result.push({
+                  label: tmpLabel,
+                  value: resultListObj
+              });
+            }
+            else{
               tmpLabel = resultListObj.title === 'search all' ? resultListObj.title : resultListObj.symbol;
               resultListObj.objType = objType;
               result.push({
                 label: tmpLabel,
-                value:resultListObj
+                value: resultListObj
               });
             }
           }
