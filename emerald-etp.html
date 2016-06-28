@@ -139,27 +139,32 @@
     bindInputEvent: function(element) {
         myAutoSuggest.setInput(element);
         let allowDelete = false;
+        var self = this;
         this.allInputBox.forEach(function(inputBox) {
-            this.unlisten(Polymer.dom(inputBox), 'keydown', function() {});
+            self.unlisten(Polymer.dom(inputBox), 'keydown', function() {});
         });
         element.addEventListener("keydown", (event) => {
 
             let tag = element.value;
+            let currentInput = event.currentTarget;
             if (event.keyCode === 13) { //enter
                 // no more add item on enter
                 //this.addTag(tag, event.currentTarget);
             } else if (event.keyCode === 188) { //comma
                 // event.preventDefault();
                 // this.addTag(tag, event.currentTarget);
-            } else if (event.keyCode === 37) { //left
+            } else if (event.keyCode === 37 && currentInput.selectionStart === currentInput.selectionEnd && currentInput.selectionStart === 0) { //left
                 event.preventDefault();
                 event.currentTarget.previousElementSibling.focus();
-            } else if (event.keyCode === 39) { //right
+            } else if (event.keyCode === 39 && currentInput.selectionStart === currentInput.selectionEnd && currentInput.selectionStart === currentInput.value
+            .length) { //right
                 event.preventDefault();
                 event.currentTarget.nextElementSibling.focus();
             } else if (event.keyCode === 8 && tag.length === 0) { //backspace with not value in input
                 if (allowDelete) {
-                    this.deleteTag(event.currentTarget.previousElementSibling);
+                    event.preventDefault();
+                    let targetElement = currentInput.previousElementSibling;
+                    this.editTag(event, currentInput, targetElement);
                     allowDelete = false;
                 } else {
                     allowDelete = true;
@@ -169,6 +174,7 @@
     },
     bindTagEvent: function(element) {
         element.addEventListener("keydown", (event) => {
+            let currentTag = event.currentTarget;
 
             if (event.keyCode === 37) { //left
                 event.preventDefault();
@@ -178,9 +184,9 @@
                 event.currentTarget.nextElementSibling.focus();
             } else if (event.keyCode === 8 || event.keyCode === 46) { //backspace or delete
                 event.preventDefault();
-                event.returnValue = false;
-
-                this.deleteTag(event.currentTarget);
+                //event.stopPropagation();
+                let targetInput = event.currentTarget.nextElementSibling;
+                this.editTag(event, targetInput, currentTag);
                 allowDelete = false;
 
 
@@ -281,6 +287,27 @@
     empty: function() {
         this.clear();
         this.tags = [];
+    },
+    editTag: function(event, editInput, currentTagElement) {
+        var self = this;
+        let tag = currentTagElement.firstChild.textContent;
+
+
+        var currentTarget = event.currentTarget;
+        var focusTag = function (event) {
+            //do some stuff here
+            currentTarget.removeEventListener('keyup',focusTag);
+            self.deleteTag(currentTagElement);
+            editInput.value = tag;
+            editInput.select();
+            editInput.focus();
+
+        };
+        currentTarget.addEventListener("keyup", focusTag);
+
+        //this.$.tagInputMain.focus();
+
+
     },
     deleteTag: function(currentTagElement) {
         this.allInputBox.splice(this.allInputBox.indexOf(currentTagElement.previousElementSibling), 1);
