@@ -55,7 +55,7 @@
             border-radius: 2px;
             position: relative;
             overflow: hidden;
-        }        
+        }
         :host .etpTagInput div[data-type='task']{
             background-color: #81A2BE;
         }
@@ -138,7 +138,6 @@
     },
     autosuggestItemDefault: function(e, detail) {
         let targetInput = e.detail.originalEvent.currentTarget;
-        let objType = detail.item.data.value.objType;
         let tag = targetInput.value;
         this.addTag(tag, targetInput);
     },
