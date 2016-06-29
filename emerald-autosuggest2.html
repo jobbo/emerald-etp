@@ -151,6 +151,15 @@
   Polymer({
     is: 'emerald-autosuggest2',
     properties: {
+      previousPillType: {
+          type: String
+      },
+      nextPillType: {
+          type: String
+      },
+      fullTxt: {
+          type: String
+      },
       /**
        * Disable if this presents
        */
@@ -329,7 +338,6 @@
      * @param {Function} transformer Callback function.
      */
     setTransformer: function (transformer) {
-      console.log("setTransform");
       if (typeof transformer !== 'function') {
         return;
       }
@@ -342,7 +350,6 @@
      * @param {Element} element An element to be added to connected elements.
      */
     addConnectedElement: function (element) {
-      console.log("addConnectedElement");
       if (!element || element.nodeType !== 1) {
         return;
       }
@@ -357,7 +364,6 @@
      * @param {Element} element An element to be removed from connected elements.
      */
     removeConnectedElement: function (element) {
-      console.log("remoceConnectedElement");
       var connectedElements = this._connectedElements;
       var index = connectedElements.indexOf(element);
       if (index < 0) {
@@ -371,7 +377,6 @@
      * Show suggestions.
      */
     showSuggestions: function () {
-      console.log("showSuggestions");
       var input = this.input;
 
       if (this.disabled || !input) {
@@ -388,7 +393,6 @@
      * Hide suggestions.
      */
     hideSuggestions: function () {
-      console.log("hideSuggestions");
       this.popup.hide();
       this.list.setKeyInput(undefined); // Always clear list's key input
     },
@@ -396,7 +400,6 @@
      * @private
      */
     loadSuggestions: function () {
-      console.log("loadSuggestions");
       if (this._blockSuggestions) {
         return;
       }
@@ -414,8 +417,6 @@
       this._requestSuggestions(keyword);
     },
     _requestSuggestions: function (keyword) {
-      console.log("_requestSuggestions");
-
       if (!this.data) {
         this._blockSuggestions = false;
       }
@@ -426,15 +427,15 @@
          *
          * @event keyword-change
          */
+        var queryObj = {
+            "previousPillType": this.previousPillType,
+            "nextPillType": this.nextPillType,
+            "queryTxt": keyword,
+          };
+        queryObj["fullTxt"] = this.fullTxt === "" ?  keyword : this.fullTxt;
         this.fire('keyword-change', { keyword: keyword, prevKeyword: this._keyword }, { bubbles: false });
         if (!this.data) {
-          var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', {
-            "previousPillType": "entity",
-            "nextPillType": "entity",
-            "queryTxt": keyword,
-            "fullTxt": keyword
-          });
-
+          var suggestPromise = this.httpPost('http://localhost:9012/Apps/SWCLAYOUT/api/autosuggestGateway', queryObj);
           suggestPromise.then(function(resp) {
             this._processSuggestionsData(resp);
           }.bind(this));
@@ -453,7 +454,6 @@
       }
     },
     _terminateSuggestions: function () {
-      console.log("_terminateSuggestions");
       this.hideSuggestions();
 
       if (!this.data) {
@@ -532,21 +532,30 @@
           for(var j=0;j< data.results[i].resultList.length;j++){
             var resultListObj = data.results[i].resultList[j];
             if(objType === 'entity'){
-              for(var x=0;x<resultListObj.hits.length;x++){
-                var hitObj = resultListObj.hits[x];
-                tmpLabel = hitObj.title === 'search all' ? hitObj.title : hitObj.symbol;
-                hitObj.objType = objType;
+              
+                tmpLabel = resultListObj.title === 'search all' ? resultListObj.title : resultListObj.symbol;
+                resultListObj.objType = objType;
                 result.push({
                   label: tmpLabel,
-                  value:hitObj
+                  value: resultListObj
                 });
-              }
-            }else{
+              
+            }
+            else if(objType === 'params') {
+              tmpLabel = resultListObj.title;
+              resultListObj.objType = objType;
+              resultListObj.vc = "PARAM";
+              result.push({
+                  label: tmpLabel,
+                  value: resultListObj
+              });
+            }
+            else{
               tmpLabel = resultListObj.title === 'search all' ? resultListObj.title : resultListObj.symbol;
               resultListObj.objType = objType;
               result.push({
                 label: tmpLabel,
-                value:resultListObj
+                value: resultListObj
               });
             }
           }
@@ -555,10 +564,8 @@
     },
     _processSuggestionsData: function (data) {
       var transformedData = this._transformData(data);
-      console.log(transformedData)
       this.list.data = transformedData;
 
-      console.log("_processSuggestionsData");
       this._timer = null;
 
       var suggestionsData = [];
@@ -587,7 +594,6 @@
       this._manageState();
     },
     _manageState: function () {
-      console.log("_manageState");
       var list = this.list;
 
       // Hide suggestions if suggestions is blocked or not available
@@ -614,12 +620,10 @@
       this._initialHighlightedItem = list.highlightedItem;
     },
     _selectHighlightedItem: function (opt_originalEvent) {
-      console.log("_selectHighlightedItem");
       var list = this.list;
       return list.selectItem(list.highlightedItem, opt_originalEvent);
     },
     _getMoreSearchItem: function () {
-      console.log("_getMoreSearchItem");
       if (this.moreSearchDisabled) {
         return null;
       }
@@ -629,7 +633,6 @@
       return list.getItemByIndex(items.length - 1);
     },
     _extractFieldValue: function (data, field) {
-      console.log("_extractFieldValue");
       if (!data || !field) {
         return null;
       }
@@ -649,7 +652,6 @@
       if (!item.value) {
 		    return;
       }
-      console.log("_suggestionItemRenderer");
       var data = item.value;
       var asSub = data.asSub === true;
       var columnElement;
@@ -721,7 +723,6 @@
       return wrapper;
     },
     _moreSearchItemRenderer: function (item) {
-      console.log("_moreSearchItemRenderer");
       var wrapper = document.createElement('div');
       wrapper.className = 'more-search';
 
@@ -744,19 +745,16 @@
       return wrapper;
     },
     _moreSearchTextChange: function (newValue, oldValue) {
-      console.log("_moreSearchTextChange");
       if (typeof newValue !== 'string') {
         this.moreSearchText = null;
       }
     },
     _dataChange: function (newValue, oldValue) {
-      console.log("_dataChange");
       if (newValue) {
         this._processSuggestionsData(newValue);
       }
     },
     _inputBlur: function (event) {
-      console.log("_inputBlur");
       var _this = this;
       var checkFocus = function (element) {
         var node = document.activeElement;
@@ -771,7 +769,6 @@
 
       // Add delay to prevent undesired suggestions hiding
       window.setTimeout(function () {
-        console.log("");
         // Check if input is focus
         var notFocus = !checkFocus(_this.input);
 
@@ -793,7 +790,6 @@
       }, 500);
     },
     _inputKeyDown: function (event) {
-      console.log("_inputKeyDown");
       if (this.disabled) {
         return;
       }
@@ -802,7 +798,6 @@
       var input = this.input;
       var list = this.list;
       var item;
-      console.log("input",input);
       switch (event.keyCode) {
         case  9: // TAB
           if (this.autoSelectDisabled) {
@@ -849,7 +844,6 @@
       event.stopPropagation();
     },
     _inputTextChange: function (event) {
-      console.log("_inputTextChange");
       if (this.disabled) {
         return;
       }
@@ -859,7 +853,7 @@
       if (this._timer) {
         window.clearTimeout(this._timer);
       }
-
+      this.fire('inputTextChange', {input: this.input});
       if (this.input.value.length > 1) {
         this._timer = window.setTimeout(this.loadSuggestions.bind(this), 200);
       }
@@ -868,7 +862,6 @@
       }
     },
     _itemHighlight: function (event) {
-      console.log("_itemHighlight");
       this._highlightedIndexMoved = true;
 
       /**
@@ -879,7 +872,6 @@
       this.fire('item-highlight', event.detail, { bubbles: false });
     },
     _itemSelect: function (event) {
-      console.log("_itemSelect");
       if (this._blockSuggestions) {
         return;
       }
@@ -907,7 +899,6 @@
       }
 
       if (moreSearch) {
-        console.log("");
         detail = {
           url: item.value.url,
           keyword: item.value.keyword
@@ -933,7 +924,6 @@
       }
     },
     _itemContextMenu: function (event) {
-      console.log("_itemContextMenu");
       var detail = event.detail;
 
       detail.originalEvent.preventDefault();
@@ -947,7 +937,6 @@
       this.fire('item-contextmenu', detail, { bubbles: false });
     },
     _messageReceive: function (event) {
-      console.log("_messageReceive");
       if (this._blockSuggestions) {
         return;
       }
