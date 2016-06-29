@@ -9,7 +9,7 @@
             align-content: flex-start;
             flex-wrap: wrap;
             background-color: #000;
-            border: solid 1px #CCC;
+            border: solid 1px #2E2E33;
             border-radius: 2px;
             min-height: 33px;
             padding: 0 5px;
@@ -22,6 +22,7 @@
             line-height: 33px;
             font-size: 14px;
             margin: 0;
+            border: none!important;
         }
         :host #tagInput {
             flex-grow: 0;
@@ -32,6 +33,7 @@
             line-height: 33px;
             font-size: 14px;
             margin: 0;
+             border: none!important;
         }
         :host #tagInputMain:focus, #tagInput:focus {
             outline: none;
@@ -53,6 +55,15 @@
             border-radius: 2px;
             position: relative;
             overflow: hidden;
+        }        
+        :host .etpTagInput div[data-type='task']{
+            background-color: #81A2BE;
+        }
+        :host .etpTagInput div[data-type='entity']{
+            background-color: #CC99CC;
+        }
+        :host .etpTagInput div[data-type='params']{
+            background-color: #8ABEB7;
         }
         :host .etpTagInput div.etpTag.duplicate {
             background-color: rgba(255, 64, 27, 0.71);
