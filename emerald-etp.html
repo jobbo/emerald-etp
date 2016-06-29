@@ -335,12 +335,17 @@
 
     },
     deleteTag: function(currentTagElement) {
-        this.allInputBox.splice(this.allInputBox.indexOf(currentTagElement.previousElementSibling), 1);
+        let inputIdx = this.allInputBox.indexOf(currentTagElement.previousElementSibling);
+        if(inputIdx > -1) {
+            this.allInputBox.splice(inputIdx, 1);
+        }
         let tag = currentTagElement.firstChild.textContent;
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement.previousElementSibling);
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement);
         let idx = this.tags.indexOf(tag)
-        this.tags.splice(idx, 1);
+        if(idx > -1) {
+            this.tags.splice(idx, 1);
+        }
         // var newTags = [];
         // this.tags.forEach((tag, idx) => {
         //     if (idx !== index) {
