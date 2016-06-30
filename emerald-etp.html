@@ -131,22 +131,22 @@
         'myAutoSuggest.inputTextChange': '_getFullText'
     },
     autosuggestItemSelected: function(e, detail) {
-        let targetInput = e.detail.input;
-        let tag = detail.item.label;
-        let objType = detail.item.data.value.objType;
+        var targetInput = e.detail.input;
+        var tag = detail.item.label;
+        var objType = detail.item.data.value.objType;
         this.addTag(tag, targetInput, objType);
     },
     autosuggestItemDefault: function(e, detail) {
-        let targetInput = e.detail.originalEvent.currentTarget;
-        let tag = targetInput.value;
+        var targetInput = e.detail.originalEvent.currentTarget;
+        var tag = targetInput.value;
         this.addTag(tag, targetInput);
     },
     created: function() {
 
     },
     attached: function() {
-        let self = this;
-        var tagInputMain = document.getElementById('tagInputMain');
+        var self = this;
+        var tagInputMain = this.$.tagInputMain;
         var myAutoSuggest = document.getElementById('myAutoSuggest');
         this.bindInputEvent(this.querySelector('#tagInputMain'));
         this.allInputBox.push(tagInputMain);
@@ -161,15 +161,15 @@
     },
     bindInputEvent: function(element) {
         myAutoSuggest.setInput(element);
-        let allowDelete = false;
+        var allowDelete = false;
         var self = this;
         this.allInputBox.forEach(function(inputBox) {
             self.unlisten(Polymer.dom(inputBox), 'keydown', function() {});
         });
         element.addEventListener("keydown", (event) => {
 
-            let tag = element.value;
-            let currentInput = event.currentTarget;
+            var tag = element.value;
+            var currentInput = event.currentTarget;
             if (event.keyCode === 13) { //enter
                 // no more add item on enter
                 //this.addTag(tag, event.currentTarget);
@@ -186,7 +186,7 @@
             } else if (event.keyCode === 8 && tag.length === 0) { //backspace with not value in input
                 if (allowDelete) {
                     event.preventDefault();
-                    let targetElement = currentInput.previousElementSibling;
+                    var targetElement = currentInput.previousElementSibling;
                     this.editTag(event, currentInput, targetElement);
                     allowDelete = false;
                 } else {
@@ -197,7 +197,7 @@
     },
     bindTagEvent: function(element) {
         element.addEventListener("keydown", (event) => {
-            let currentTag = event.currentTarget;
+            var currentTag = event.currentTarget;
 
             if (event.keyCode === 37) { //left
                 event.preventDefault();
@@ -208,7 +208,7 @@
             } else if (event.keyCode === 8 || event.keyCode === 46) { //backspace or delete
                 event.preventDefault();
                 //event.stopPropagation();
-                let targetInput = event.currentTarget.nextElementSibling;
+                var targetInput = event.currentTarget.nextElementSibling;
                 this.editTag(event, targetInput, currentTag);
                 allowDelete = false;
 
@@ -216,9 +216,12 @@
             }
         });
     },
+    inputFocus: function() {
+        this.$.tagInputMain.focus();
+    },
     addInput: function(beforeNode) {
-        let self = this;
-        let $pillInput = document.createElement("input");
+        var self = this;
+        var $pillInput = document.createElement("input");
         $pillInput.type = "text";
         $pillInput.id = "tagInput";
         $pillInput.className = "pillInput";
@@ -253,10 +256,10 @@
         return this.tags.join(",");
     },
     _addTag: function(tag, currentInputElement, objType) {
-        let $tag = document.createElement("div");
+        var $tag = document.createElement("div");
         console.log($tag);
         $tag.className = "etpTag";
-        let $remove = document.createElement("div");
+        var $remove = document.createElement("div");
         $remove.className = "remove";
         $remove.innerHTML = "x";
         $remove.addEventListener("click", (event) => {
@@ -277,10 +280,10 @@
 
 
         this.tags.forEach((tag, idx) => {
-            let $tag = document.createElement("div");
+            var $tag = document.createElement("div");
             console.log($tag);
             $tag.className = "etpTag";
-            let $remove = document.createElement("div");
+            var $remove = document.createElement("div");
             $remove.className = "remove";
             $remove.innerHTML = "x";
             $remove.addEventListener("click", () => {
@@ -314,7 +317,7 @@
     },
     editTag: function(event, editInput, currentTagElement) {
         var self = this;
-        let tag = currentTagElement.firstChild.textContent;
+        var tag = currentTagElement.firstChild.textContent;
 
 
         var currentTarget = event.currentTarget;
@@ -334,14 +337,14 @@
 
     },
     deleteTag: function(currentTagElement) {
-        let inputIdx = this.allInputBox.indexOf(currentTagElement.previousElementSibling);
+        var inputIdx = this.allInputBox.indexOf(currentTagElement.previousElementSibling);
         if(inputIdx > -1) {
             this.allInputBox.splice(inputIdx, 1);
         }
-        let tag = currentTagElement.firstChild.textContent;
+        var tag = currentTagElement.firstChild.textContent;
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement.previousElementSibling);
         Polymer.dom(this.$$('.etpTagInput')).removeChild(currentTagElement);
-        let idx = this.tags.indexOf(tag)
+        var idx = this.tags.indexOf(tag)
         if(idx > -1) {
             this.tags.splice(idx, 1);
         }

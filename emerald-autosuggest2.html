@@ -1,6 +1,6 @@
-<link rel="import" href="../bower_components/uifr-app/uifr-app.html">
-<link rel="import" href="../bower_components/coral-popup-panel/coral-popup-panel.html">
-<link rel="import" href="../bower_components/coral-list/coral-list.html">
+<link rel="import" href="bower_components/uifr-app/uifr-app.html">
+<link rel="import" href="bower_components/coral-popup-panel/coral-popup-panel.html">
+<link rel="import" href="bower_components/coral-list/coral-list.html">
 
 <dom-module id="emerald-autosuggest2">
 <template>
@@ -532,14 +532,14 @@
           for(var j=0;j< data.results[i].resultList.length;j++){
             var resultListObj = data.results[i].resultList[j];
             if(objType === 'entity'){
-              
+
                 tmpLabel = resultListObj.title === 'search all' ? resultListObj.title : resultListObj.symbol;
                 resultListObj.objType = objType;
                 result.push({
                   label: tmpLabel,
                   value: resultListObj
                 });
-              
+
             }
             else if(objType === 'params') {
               tmpLabel = resultListObj.title;
