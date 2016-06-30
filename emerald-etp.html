@@ -137,9 +137,9 @@
         this.addTag(tag, targetInput, objType);
     },
     autosuggestItemDefault: function(e, detail) {
-        let targetInput = e.detail.originalEvent.currentTarget;
+        var targetInput = e.detail.originalEvent.currentTarget;
         var inputValue = targetInput.value.toLowerCase();
-        let tag = targetInput.value;
+        var tag = targetInput.value;
         this.addTag(tag, targetInput, 'other');
         function deferred() {
           var result = {};
@@ -169,7 +169,7 @@
           }
 
         }.bind(this));
-    },    
+    },
     _matchSuggestInput: function (lists, input){
 
       for(var i=0;i<lists.length;i++) {
