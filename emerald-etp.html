@@ -137,9 +137,48 @@
         this.addTag(tag, targetInput, objType);
     },
     autosuggestItemDefault: function(e, detail) {
-        var targetInput = e.detail.originalEvent.currentTarget;
-        var tag = targetInput.value;
-        this.addTag(tag, targetInput);
+        let targetInput = e.detail.originalEvent.currentTarget;
+        var inputValue = targetInput.value.toLowerCase();
+        let tag = targetInput.value;
+        this.addTag(tag, targetInput, 'other');
+        function deferred() {
+          var result = {};
+          result.promise = new Promise(function(resolve, reject) {
+            result.resolve = resolve;
+            result.reject = reject;
+          });
+          return result;
+        };
+        var test = 'test'
+        var getSuggestDeferred = deferred();
+
+        myAutoSuggest.addEventListener('get-suggestionsData', function(e,detail) {
+            getSuggestDeferred.resolve({suggestionsLists: e.detail.suggestionsData, input: inputValue});
+        });
+        getSuggestDeferred.promise.then(function(suggestionsDetail){
+            lists = suggestionsDetail.suggestionsLists;
+            input = suggestionsDetail.input;
+            //console.log("suggest ",lists, input);
+            for(var i=0;i<lists.length;i++) {
+                if(input.toUpperCase() === lists[i].label) {
+                tagElements = this.querySelector('.etpTag[data-tag='+inputValue+'][data-type="other"]');
+                tagElements.dataset.type = lists[i].value.objType;
+                console.log("suggest ",lists[i].label, tagElements);
+                break;
+            }
+          }
+
+        }.bind(this));
+    },    
+    _matchSuggestInput: function (lists, input){
+
+      for(var i=0;i<lists.length;i++) {
+        if(input.toUpperCase() === lists[i].data.label) {
+
+          return lists[i].data;
+        }
+        return;
+      }
     },
     created: function() {
 
@@ -257,7 +296,6 @@
     },
     _addTag: function(tag, currentInputElement, objType) {
         var $tag = document.createElement("div");
-        console.log($tag);
         $tag.className = "etpTag";
         var $remove = document.createElement("div");
         $remove.className = "remove";

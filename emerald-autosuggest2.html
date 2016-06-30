@@ -589,7 +589,7 @@
           }
         });
       }
-
+      this.fire('get-suggestionsData', {suggestionsData : suggestionsData});
       this.list.data = suggestionsData;
       this._manageState();
     },
@@ -801,11 +801,11 @@
       switch (event.keyCode) {
         case  9: // TAB
           if (this.autoSelectDisabled) {
-            if (popupVisible) {
+            //if (popupVisible) {
               if(!this._selectHighlightedItem(event)) {
                 this.fire('item-default', {originalEvent : event});
               }
-            }
+            //}
             this._terminateSuggestions();
             //this.fire('highlight-selected');
           }
